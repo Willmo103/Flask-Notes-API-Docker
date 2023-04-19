@@ -28,4 +28,6 @@ class Config:
     else:
         SQLALCHEMY_DATABASE_URI = "sqlite:///myNotes.db"
 
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False # This is just here to suppress a warning from SQLAlchemy as it will soon be removed
+    SQLALCHEMY_ECHO = True # this is to show the SQL queries in the terminal
+    SQLALCHEMY_RECORD_QUERIES = True # this is to show the SQL queries in the terminal

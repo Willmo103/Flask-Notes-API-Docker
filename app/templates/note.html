@@ -9,6 +9,9 @@
     </div>
     <div class="mb-3">
         {{ form.content.label }} {{ form.content(class="form-control", rows=10) }}
+        {% if user.is_authenticated %}
+        {{ form.private.label }} {{ form.private() }}
+        {% endif %}
     </div>
     {{ form.submit(class="btn btn-primary") }}
 </form>

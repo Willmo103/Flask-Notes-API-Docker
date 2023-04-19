@@ -7,7 +7,7 @@
         <div class="card my-3">
             <div class="card-body">
                 <h5 class="card-title">{{ note.title }}</h5>
-                <p class="card-text">{{ note.content | striptags | truncate(100, True) }}</p>
+                <p class="card-text">{{ note.content | markdown | striptags | truncate(100, True) }}</p>
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                     data-bs-target="#noteModal{{ note.id }}">Read More</button>
             </div>
@@ -22,10 +22,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    {{ note.content | safe }}
+                    {{ note.content | markdown | safe }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <a href="{{ url_for('routes.edit_note', note_id=note.id, user=user) }}"
+                        class="btn btn-warning">Edit</a>
+                    <a href="{{ url_for('routes.delete_note', note_id=note.id, user=user ) }}"
+                        class="btn btn-danger">Delete</a>
                 </div>
             </div>
         </div>

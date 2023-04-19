@@ -1,4 +1,5 @@
-from app import User, Note
+from flask import flash, redirect, url_for
+from app.models import User, Note
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -9,23 +10,32 @@ from wtforms import (
     SelectField,
     IntegerField,
 )
-from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
+from wtforms.validators import (
+    DataRequired,
+    Length,
+    Email,
+    EqualTo,
+    ValidationError,
+    email_validator,
+)
+
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
-    submit = SubmitField('Sign In')
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    remember_me = BooleanField("Remember Me")
+    submit = SubmitField("Sign In")
+
 
 class NoteForm(FlaskForm):
-    title = StringField('Title')
-    content = TextAreaField('Content')
-    submit = SubmitField('Submit')
+    title = StringField("Title")
+    content = TextAreaField("Content")
+    submit = SubmitField("Submit")
 
 
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[DataRequired()])
-    Email = StringField('Email', validators=[Email()], description="This is optional, provides a way to reset your password if you forget it., as well as allowing you to email notes to yourself.")
+    email = StringField("Email", validators=[Email()], email_validator=True)
     password = PasswordField("Password", validators=[DataRequired()])
     password2 = PasswordField(
         "Repeat Password", validators=[DataRequired(), EqualTo("password")]
@@ -37,9 +47,14 @@ class RegistrationForm(FlaskForm):
         if user is not None:
             raise ValidationError("Please use a different username.")
 
+
 class NoteEditForm(FlaskForm):
-    def self__init__(self, note_id):
+    def self__init__(self, note_id, user_id):
         note = Note.query.get_or_404(note_id)
-        self.title = StringField('Title', default=note.title)
-        self.content = TextAreaField('Content', default=note.content)
-        self.submit = SubmitField('Update Note')
+        if note.is_note_owned_by_user(user_id):
+            self.title = StringField("Title", default=note.title)
+            self.content = TextAreaField("Content", default=note.content)
+            self.submit = SubmitField("Update Note")
+        else:
+            flash("You do not have permission to edit this note.")
+            return redirect(url_for("routes.index"))

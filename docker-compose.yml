@@ -6,12 +6,12 @@ services:
     container_name: note-server
     image: note-server:latest
     ports:
-      - "5000:5000"
+      - "4202:4202"
     environment:
       - DATABASE_URL=sqlite:///notes.db
     volumes:
       - ./app:/app
       - db-data:/data
-    command: flask run --host=0.0.0.0 --port=4200
+    command: flask run --host=0.0.0.0 --port=4202
 volumes:
   db-data:

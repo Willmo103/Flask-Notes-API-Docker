@@ -16,14 +16,13 @@ def markdown_filter(content):
 
 
 def create_app():
-    print(__name__, "is the name of the app")
     app = Flask(__name__)
     app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY") or "5S3eCcRe3et_kKke3ey"
     app.config["SQLALCHEMY_DATABASE_URI"] = (
         os.environ.get("DATABASE_URL") or "sqlite:///notes.db"
     )
     app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_ECHO"] = True
+    app.config["SQLALCHEMY_ECHO"] = False
 
     db.init_app(app)
     login_manager.init_app(app)

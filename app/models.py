@@ -1,4 +1,5 @@
 from werkzeug.security import generate_password_hash, check_password_hash
+from sqlalchemy import or_, and_
 from flask_login import UserMixin
 from datetime import datetime
 from app import db, login_manager
@@ -45,19 +46,35 @@ class Note(db.Model):
 
     @staticmethod
     def get_all_anonymous_notes():
-        notes = Note.query.filter_by(user_id=None).all()
-        notes.extend(Note.query.filter_by(private=False).all())
-        return notes
-
-    @staticmethod
-    def search(search_term: str, user_id: int):
         notes = []
-        query = Note.query.filter(Note.content.contains(search_term)).all()
-        for note in query:
-            if note.is_anonymous() or note.is_owned_by_user(user_id):
+        notes_query = Note.query.all()
+        for note in notes_query:
+            if  note.is_anonymous() or note.private is False:
                 notes.append(note)
         return notes
 
+    @staticmethod
+    def search(search_term: str, user_id):
+
+        # If user_id is None, only search anonymous notes
+        if user_id is None:
+            notes = Note.query.filter(
+                and_(
+                    Note.content.contains(search_term),
+                    Note.user_id.is_(None)
+                )
+            ).all()
+        else:
+            # Search for notes that are either owned by the user or are anonymous
+            notes = Note.query.filter(
+                Note.content.contains(search_term),
+                or_(
+                    Note.user_id == user_id,
+                    Note.user_id.is_(None)
+                )
+            ).all()
+
+        return notes
     def is_anonymous(self):
         return self.user_id is None
 

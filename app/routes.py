@@ -1,4 +1,4 @@
-from flask import flash, redirect, render_template, url_for, Blueprint
+from flask import flash, redirect, render_template, url_for, Blueprint, request
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
 from app.models import User, Note
@@ -109,3 +109,16 @@ def get_user_notes(user_id):
     user = User.query.get_or_404(user_id)
     notes = user.get_notes()
     return render_template("index.html", notes=notes, user=user)
+
+
+@endpoint.route("/search", methods=["GET", "POST"])
+def search_notes():
+    if request.method == "POST":
+        search_term = request.form["search_term"]
+        try:
+            id = current_user.id
+        except AttributeError:
+            id = None
+        notes = Note.search(search_term, id)
+        return render_template("search_results.html", notes=notes, title=f"Search Results for {search_term}")
+    return redirect(url_for("routes.index"))

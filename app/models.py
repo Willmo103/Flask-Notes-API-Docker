@@ -30,7 +30,7 @@ class User(UserMixin, db.Model):
         return check_password_hash(self.password_hash, password)
 
     def __repr__(self):
-        return f"User('{self.username}', '{self.email}')"
+        return f"User('{self.username}')"
 
 
 class Note(db.Model):
@@ -43,13 +43,19 @@ class Note(db.Model):
     )
     private = db.Column(db.Boolean, nullable=False, default=True)
 
-    def __repr__(self):
-        return f"Note('{self.title}', '{self.date_posted}')"
-
     @staticmethod
     def get_all_anonymous_notes():
         notes = Note.query.filter_by(user_id=None).all()
         notes.extend(Note.query.filter_by(private=False).all())
+        return notes
+
+    @staticmethod
+    def search(search_term: str, user_id: int):
+        notes = []
+        query = Note.query.filter(Note.content.contains(search_term)).all()
+        for note in query:
+            if note.is_anonymous() or note.is_owned_by_user(user_id):
+                notes.append(note)
         return notes
 
     def is_anonymous(self):
@@ -58,12 +64,5 @@ class Note(db.Model):
     def is_owned_by_user(self, user_id: int):
         return self.user_id == user_id
 
-    def update(self, title, content):
-        self.title = title
-        self.content = content
-        db.session.update(self)
-        db.session.commit()
-
-    def delete(self):
-        db.session.delete(self)
-        db.session.commit()
+    def __repr__(self):
+        return f"Note('{self.title}', '{self.date_posted}')"

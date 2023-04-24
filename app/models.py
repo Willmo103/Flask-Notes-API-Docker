@@ -25,7 +25,7 @@ class User(UserMixin, db.Model):
     groups: Mapped["Group"] = db.relationship("Group", backref="author", lazy=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
-    def get_notes(self) -> List["Note"] | None:
+    def get_notes(self) -> List | None:
         return Note.query.filter_by(user_id=self.id).all()
 
     def is_admin(self) -> bool:
@@ -54,7 +54,7 @@ class Note(db.Model):
     private: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     @staticmethod
-    def get_all_anonymous_notes() -> List["Note"] | None:
+    def get_all_anonymous_notes() -> List | None:
         notes = []
         notes_query = Note.query.all()
         for note in notes_query:
@@ -63,7 +63,7 @@ class Note(db.Model):
         return notes
 
     @staticmethod
-    def search(search_term: str, user_id) -> List["Note"] | None:
+    def search(search_term: str, user_id) -> List | None:
         if user_id is None:
             notes = Note.query.filter(
                 and_(Note.content.contains(search_term), Note.user_id.is_(None))
@@ -89,7 +89,7 @@ class Note(db.Model):
         return f"Note('{self.title}', '{self.date_posted}')"
 
     @staticmethod
-    def return_index_page_notes(user: User | None) -> List["Note"] | None:
+    def return_index_page_notes(user: User) -> List | None:
         if user is not None and user.is_authenticated:
             return Note.query.filter(
                 or_(
@@ -139,7 +139,7 @@ class File(db.Model):
         db.session.commit()
 
     @staticmethod
-    def get_all_user_files(user: User) -> list["File" | None]:
+    def get_all_user_files(user: User) -> List | None:
         if user.is_authenticated:
             return File.query.filter_by(user_id=user.id).all()
 
@@ -162,7 +162,7 @@ class File(db.Model):
         db.session.commit()
 
     @staticmethod
-    def return_index_page_files(user: User) -> list["File" | None]:
+    def return_index_page_files(user: User) -> List | None:
         File.read_info_from_uploads_dir()
         if user is not None and user.is_authenticated:
             return File.query.filter(
@@ -197,7 +197,7 @@ class File(db.Model):
             yield file
 
     @staticmethod
-    def get_admin_files(current_user: User) -> list["File" | None]:
+    def get_admin_files(current_user: User) -> List | None:
         if current_user.is_admin():
             return File.query.all()
 
@@ -225,9 +225,7 @@ class Download(db.Model):
         nullable=True,
         default=None,
     )
-    file_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("file.id"), primary_key=True
-    )
+    file_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
     def __init__(
         self,
@@ -261,9 +259,7 @@ class Upload(db.Model):
         nullable=True,
         default=None,
     )
-    file_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("file.id"), primary_key=True
-    )
+    file_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
     def __init__(
         self,
@@ -295,22 +291,10 @@ class Bookmark(db.Model):
     href: str = db.Column(db.Text, nullable=False)
     details: str = db.Column(db.String(100), nullable=True, default=None)
     private: bool = db.Column(db.Boolean, nullable=False, default=False)
-    user_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=True
-    )
-    group_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("group.id"), nullable=True
-    )
+    user_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    group_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("group.id"), nullable=True)
 
-    def __init__(
-        self,
-        title: str,
-        href: str,
-        private: bool,
-        user_id: int,
-        group_id: int,
-        details: str = None,
-    ) -> None:
+    def __init__(self, title: str, href: str, private: bool, user_id: int, group_id: int, details: str = None) -> None:
         self.title = title
         self.href = href
         self.private = private
@@ -321,11 +305,13 @@ class Bookmark(db.Model):
     def __repr__(self):
         return f"Bookmark('{self.title}', '{self.href}', '{self.private}')"
 
-    def return_group_bookmarks(self, group_id: int) -> list["Bookmark"]:
+    def return_group_bookmarks(self, group_id: int):
         return Bookmark.query.filter_by(group_id=group_id).all()
 
-    def return_user_bookmarks(self, user_id: int) -> list["Bookmark"]:
+    def return_user_bookmarks(self, user_id: int):
         return Bookmark.query.filter_by(user_id=user_id).all()
+
+
 
     def save(self) -> None:
         db.session.add(self)
@@ -336,9 +322,7 @@ class Group(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(100), nullable=False)
     private: bool = db.Column(db.Boolean, nullable=False, default=False)
-    user_id: Mapped[int] = db.Column(
-        db.Integer, db.ForeignKey("user.id"), nullable=True
-    )
+    user_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     bookmarks: Mapped["Bookmark"] = db.relationship(
         "Bookmark", backref="group", lazy=True
     )
@@ -374,7 +358,7 @@ class Group(db.Model):
         db.session.commit()
 
     @staticmethod
-    def return_index_page_groups_and_bookmarks(user: User) -> list["Group" | None]:
+    def return_index_page_groups_and_bookmarks(user: User) -> List | None:
         if user.is_authenticated:
             return Group.query.filter_by(
                 or_(

@@ -42,12 +42,15 @@ def init_db_config():
     # write SQLALCHEMY_DATABASE_URI to .env file if not already present
     with open(env_file, "r") as f:
         lines = f.readlines()
-    with open(env_file, "w") as f:
-        for line in lines:
-            if "SQLALCHEMY_DATABASE_URI" not in line:
-                f.write(line)
-    with open(env_file, "a") as f:
-        f.write(f"""\nSQLALCHEMY_DATABASE_URI='{SQLALCHEMY_DATABASE_URI}'""")
+    if not any('SQLALCHEMY_DATABASE_URI' in line for line in lines):
+        with open(env_file, "w") as f:
+            for line in lines:
+                if "SQLALCHEMY_DATABASE_URI" not in line:
+                    f.write(line)
+
+        with open(env_file, "a") as f:
+            f.write(f"""\nSQLALCHEMY_DATABASE_URI='{SQLALCHEMY_DATABASE_URI}'""")
+
     return
 
 

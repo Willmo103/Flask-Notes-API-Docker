@@ -1,4 +1,5 @@
 import os
+from typing import Generator
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, and_
 from flask_login import UserMixin
@@ -58,14 +59,11 @@ class Note(db.Model):
 
     @staticmethod
     def search(search_term: str, user_id):
-
-        # If user_id is None, only search anonymous notes
         if user_id is None:
             notes = Note.query.filter(
                 and_(Note.content.contains(search_term), Note.user_id.is_(None))
             ).all()
         else:
-            # Search for notes that are either owned by the user or are anonymous
             notes = Note.query.filter(
                 Note.content.contains(search_term),
                 or_(Note.user_id == user_id, Note.user_id.is_(None)),
@@ -75,6 +73,9 @@ class Note(db.Model):
 
     def is_anonymous(self):
         return self.user_id is None
+
+    def is_private(self):
+        return self.private
 
     def is_owned_by_user(self, user_id: int):
         return self.user_id == user_id
@@ -91,9 +92,11 @@ class Note(db.Model):
 
 class File(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
-    date_posted: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    date_posted: datetime = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow
+    )
     last_downloaded: datetime = db.Column(db.DateTime, nullable=True, default=None)
-    owner_id: int = db.Column(
+    user_id: int = db.Column(
         db.Integer, db.ForeignKey("user.id"), nullable=True, default=None
     )
     file_name: str = db.Column(db.String(100), nullable=True, default=None)
@@ -105,10 +108,15 @@ class File(db.Model):
     details: str = db.Column(db.String(200), nullable=True, default=None)
 
     def __init__(
-        self, file_name: str, owner_id: int = None, date_posted: datetime = None, private: bool = False, details: str | None = None
+        self,
+        file_name: str,
+        user_id: int = None,
+        date_posted: datetime = None,
+        private: bool = False,
+        details: str | None = None,
     ) -> None:
         self.file_name = file_name
-        self.owner_id = owner_id
+        self.user_id = user_id
         self.date_posted = date_posted
         self.private = private
         self.details = details
@@ -119,8 +127,8 @@ class File(db.Model):
         return files
 
     @staticmethod
-    def new_file(filename, owner_id) -> None:
-        new_file: File = File(filename, owner_id, datetime.utcnow())
+    def new_file(filename, user_id) -> None:
+        new_file: File = File(filename, user_id, datetime.utcnow())
         db.session.add(new_file)
         db.session.commit()
 
@@ -138,7 +146,7 @@ class File(db.Model):
     def return_index_page_files(id):
         File.read_info_from_uploads_dir()
         return File.query.filter(
-            or_(File.owner_id == id, File.owner_id.is_(None), File.private.is_(False))
+            or_(File.user_id == id, File.user_id.is_(None), File.private.is_(False))
         ).all()
 
     @staticmethod
@@ -154,7 +162,7 @@ class File(db.Model):
                 db.session.commit()
 
     @staticmethod
-    def scan_folder():
+    def scan_folder() -> Generator(str):
         files = []
         for file in os.listdir(_upload_folder):
             if file != ".gitkeep":
@@ -166,16 +174,30 @@ class File(db.Model):
         if current_user.is_admin():
             return File.query.all()
 
+    def is_owned_by_user(self, user_id: int) -> bool:
+        return self.user_id == user_id
+
+    def is_anonymous(self) -> bool:
+        return self.user_id is None
+
+    def is_private(self) -> bool:
+        return self.private
+
+    def __repr__(self) -> str:
+        return f"File('{self.file_name}', '{self.date_posted}')"
+
 
 class Download(db.Model):
-    download_date: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    user: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    file: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+    download_date: datetime = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow
+    )
+    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    file_id: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
-    def __init__(self, user, file):
+    def __init__(self, user_id: int, file_id: int) -> None:
         self.download_date = datetime.utcnow()
-        self.user = user
-        self.file = file
+        self.user = user_id
+        self.file = file_id
 
     @staticmethod
     def record_download(user, file):
@@ -183,18 +205,26 @@ class Download(db.Model):
         db.session.add(dl)
         db.session.commit()
 
-class Upload(db.Model):
-    upload_date: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    user: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    file: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
-    def __init__(self, user, file) -> None:
+class Upload(db.Model):
+    upload_date: datetime = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow
+    )
+    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    file_id: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+
+    def __init__(self, user_id: int, file_id: int) -> None:
         self.upload_date = datetime.utcnow()
-        self.user = user
-        self.file = file
+        self.user_id = user_id
+        self.file_id = file_id
 
     @staticmethod
-    def record_upload(user, file) -> None:
-        ul: Upload = Upload(user, file)
+    def record_upload(user_id: int, file_id: int) -> None:
+        ul: Upload = Upload(user_id, file_id)
         db.session.add(ul)
         db.session.commit()
+
+
+class Bookmark(db.Model):
+    pass
+    # TODO: implement bookmarks

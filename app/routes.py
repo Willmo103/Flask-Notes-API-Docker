@@ -96,7 +96,8 @@ def register():
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
         user.set_password(form.password.data)
-        if User.query.count() > 0:
+        first_admin = User.query.filter_by(is_admin=True).first()
+        if not first_admin:
             user.is_admin = True
         db.session.add(user)
         db.session.commit()

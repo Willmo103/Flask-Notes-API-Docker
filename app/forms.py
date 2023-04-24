@@ -13,7 +13,7 @@ from wtforms.validators import (
     Email,
     EqualTo,
     ValidationError,
-    Optional
+    Optional,
 )
 from flask_wtf.file import FileField
 
@@ -59,13 +59,16 @@ class AtLeastOneFileRequired:
         self.message = message
 
     def __call__(self, form, field):
-        other_field = form.file if field.name == 'file_dz' else form.file_dz
+        other_field = form.file if field.name == "file_dz" else form.file_dz
         if not field.data and not other_field.data:
             raise ValidationError(self.message)
 
+
 class FileUploadForm(FlaskForm):
     file = FileField("Select a file", validators=[Optional(), AtLeastOneFileRequired()])
-    file_dz = FileField("Select a file", validators=[Optional(), AtLeastOneFileRequired()])
+    file_dz = FileField(
+        "Select a file", validators=[Optional(), AtLeastOneFileRequired()]
+    )
     details = StringField("Details", validators=[Length(max=200)])
     private = BooleanField("Private")
     submit = SubmitField("Upload")

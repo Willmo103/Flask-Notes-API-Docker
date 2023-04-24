@@ -1,5 +1,4 @@
-from flask import flash, redirect, url_for
-from app.models import User, Note
+from app.models import User
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -7,8 +6,6 @@ from wtforms import (
     BooleanField,
     SubmitField,
     TextAreaField,
-    SelectField,
-    IntegerField,
 )
 from wtforms.validators import (
     DataRequired,
@@ -16,8 +13,8 @@ from wtforms.validators import (
     Email,
     EqualTo,
     ValidationError,
-    email_validator,
 )
+from flask_wtf.file import FileField, FileRequired
 
 
 class LoginForm(FlaskForm):
@@ -52,3 +49,10 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
             raise ValidationError("Please use a different username.")
+
+
+class FileUploadForm(FlaskForm):
+    file = FileField("Select a file", validators=[FileRequired()])
+    details = StringField("Details", validators=[Length(max=200)])
+    private = BooleanField("Private")
+    submit = SubmitField("Upload")

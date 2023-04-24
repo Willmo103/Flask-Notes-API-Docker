@@ -2,7 +2,9 @@ from flask import flash, redirect, render_template, url_for, Blueprint, request
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
 from app.models import User, Note, File
-from app.forms import LoginForm, RegistrationForm, NoteForm
+from app.forms import LoginForm, RegistrationForm, NoteForm, FileUploadForm
+from werkzeug.utils import secure_filename
+import os, datetime
 
 endpoint = Blueprint("routes", __name__)
 
@@ -10,8 +12,12 @@ endpoint = Blueprint("routes", __name__)
 @endpoint.route("/")
 @endpoint.route("/index")
 def index():
-    notes = Note.return_index_page_notes(current_user.id if current_user.is_authenticated else None)
-    files = File.return_index_page_files(current_user.id if current_user.is_authenticated else None)
+    notes = Note.return_index_page_notes(
+        current_user.id if current_user.is_authenticated else None
+    )
+    files = File.return_index_page_files(
+        current_user.id if current_user.is_authenticated else None
+    )
     return render_template(
         "index.html",
         notes=notes,
@@ -20,6 +26,42 @@ def index():
         title="Info_Hub",
     )
 
+
+import os
+from werkzeug.utils import secure_filename
+from app.forms import FileUploadForm
+
+# Add this to your routes.py
+@endpoint.route("/upload_file", methods=["GET", "POST"])
+@login_required
+def upload_file():
+    form = FileUploadForm()
+    if form.validate_on_submit():
+        file = form.file.data
+        if file.filename == "":
+            flash("No selected file")
+            return redirect(request.url)
+
+        if file:
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(endpoint.config["UPLOAD_FOLDER"], filename))
+        if current_user.is_authenticated:
+            new_file = File(
+                name=filename,
+                user_id=current_user.id,
+                date_posted=datetime.utcnow(),
+                private=form.private.data,
+                details=form.details.data,
+            )
+        else:
+            new_file = File(name=filename, date_posted=datetime.utcnow())
+        db.session.add(new_file)
+        db.session.commit()
+        flash("File uploaded successfully")
+        return redirect(url_for("routes.index"))
+
+    flash("File upload failed")
+    return redirect(url_for("routes.index"))
 
 
 @endpoint.route("/login", methods=["GET", "POST"])

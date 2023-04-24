@@ -84,11 +84,9 @@ class Note(db.Model):
 
     @staticmethod
     def return_index_page_notes(id):
-        notes = []
-        for note in Note.query.all():
-            if note.is_anonymous() or note.user_id == id:
-                notes.append(note)
-        return notes
+        return Note.query.filter(
+            or_(Note.user_id == id, Note.user_id.is_(None), Note.private.is_(False))
+        ).all()
 
 
 class File(db.Model):
@@ -103,11 +101,17 @@ class File(db.Model):
     file_type = db.Column(db.String(100), nullable=True, default=None)
     deleted = db.Column(db.Boolean, nullable=False, default=False)
     date_deleted = db.Column(db.DateTime, nullable=True, default=None)
+    private = db.Column(db.Boolean, nullable=False, default=True)
+    details = db.Column(db.String(200), nullable=True, default=None)
 
-    def __init__(self, file_name, owner_id=None, date_posted=None):
+    def __init__(
+        self, file_name, owner_id=None, date_posted=None, private=False, details=None
+    ):
         self.file_name = file_name
         self.owner_id = owner_id
         self.date_posted = date_posted
+        self.private = private
+        self.details = details
 
     @staticmethod
     def get_all_user_files(user_id: int):
@@ -139,12 +143,9 @@ class File(db.Model):
 
     @staticmethod
     def return_index_page_files(id):
-        files = []
-        File.read_info_from_uploads_dir()
-        for file in File.query.all():
-            if file.owner_id is None or file.owner_id == id:
-                files.append(file)
-        return files
+        return File.query.filter(
+            or_(File.owner_id == id, File.owner_id.is_(None), File.private.is_(False))
+        ).all()
 
     @staticmethod
     def read_info_from_uploads_dir():
@@ -165,3 +166,11 @@ class File(db.Model):
             if file != ".gitkeep":
                 files.append(file)
             yield file
+
+    @staticmethod
+    def get_admin_files():
+        files = []
+        for file in File.query.all():
+            if file.deleted is False:
+                files.append(file)
+        return files

@@ -6,6 +6,7 @@ from wtforms import (
     BooleanField,
     SubmitField,
     TextAreaField,
+    URLField,
 )
 from wtforms.validators import (
     DataRequired,
@@ -14,6 +15,7 @@ from wtforms.validators import (
     EqualTo,
     ValidationError,
     Optional,
+    URL,
 )
 from flask_wtf.file import FileField
 
@@ -72,3 +74,10 @@ class FileUploadForm(FlaskForm):
     details = StringField("Details", validators=[Length(max=200)])
     private = BooleanField("Private")
     submit = SubmitField("Upload")
+
+class BookmarkForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    href = URLField("URL", validators=[DataRequired(), URL()])
+    details = TextAreaField("Details (optional)")
+    private = BooleanField("Private")
+    submit = SubmitField("Add")

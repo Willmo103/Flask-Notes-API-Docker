@@ -14,6 +14,7 @@
 </head>
 
 <body>
+    <!-- base.html -->
     <nav class="navbar navbar-expand-md navbar-dark bg-dark mb-4">
         <div class="container-fluid">
             <a class="navbar-brand" href="{{ url_for('routes.index') }}">Info_Hub</a>
@@ -31,15 +32,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.note') }}">New Note</a>
                     </li>
-                </ul>
-                <form class="d-flex" action="{{ url_for('routes.search_notes') }}" method="POST">
-                    <input class="form-control me-2" type="search" name="search_term" placeholder="Search"
-                        aria-label="Search">
-                    <button class="btn btn-outline-success" type="submit">Search</button>
-                </form>
-                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ url_for('routes.logout') }}">Logout</a>
+                        <button type="nav-link" class="btn btn-primary nav-btn" data-bs-toggle="modal"
+                            data-bs-target="#addBookmarkOrGroupModal">
+                            Add Bookmark or Group
+                        </button>
                     </li>
                 </ul>
                 {% else %}
@@ -50,26 +47,37 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.note') }}">New Note</a>
                     </li>
+                    <li class="nav-item">
+                        <button type="nav-link" class="btn btn-primary nav-btn" data-bs-toggle="modal"
+                            data-bs-target="#addBookmarkOrGroupModal">
+                            Add Bookmark or Group
+                        </button>
+                    </li>
                 </ul>
-
-                <button type="nav-link" class="btn btn-primary nav-btn" data-bs-toggle="modal"
-                    data-bs-target="#fileUploadModal">
-                    Upload a File
-                </button>
-                <form class="d-flex" action="{{ url_for('routes.search_notes') }}" method="POST">
+                {% endif %}
+                <form class="d-flex me-2" action="{{ url_for('routes.search_notes') }}" method="POST">
                     <input class="form-control me-2" type="search" name="search_term" placeholder="Search"
                         aria-label="Search">
                     <button class="btn btn-outline-success" type="submit">Search</button>
                 </form>
+                <button type="nav-link" class="btn btn-primary nav-btn me-2" data-bs-toggle="modal"
+                    data-bs-target="#fileUploadModal">
+                    Upload a File
+                </button>
                 <ul class="navbar-nav">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('routes.logout') }}">Logout</a>
+                    </li>
+                    {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.login') }}">Login</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('routes.register') }}">Register</a>
                     </li>
+                    {% endif %}
                 </ul>
-                {% endif %}
             </div>
         </div>
     </nav>
@@ -98,39 +106,79 @@
                 <div class="modal-body">
                     <form method="POST" action="{{ url_for('routes.upload_file') }}" enctype="multipart/form-data"
                         id="fileUploadForm">
-                        {{ form.hidden_tag() }}
+                        {{ upload_form.hidden_tag() }}
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="mb-3">
-                                    {{ form.file.label(class="form-label") }}
-                                    {{ form.file(class="form-control") }}
+                                    {{ upload_form.file.label(class="form-label") }}
+                                    {{ upload_form.file(class="form-control") }}
                                 </div>
                                 <div class="mb-3">
-                                    {{ form.file_dz.label(class="form-label") }}
+                                    {{ upload_form.file_dz.label(class="form-label") }}
                                     <div id="dropZone" class="border rounded p-2 dropzone">
-                                        {{ form.file_dz() }}
+                                        {{ upload_form.file_dz() }}
                                         Drag and drop a file here
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="mb-3">
-                                    {{ form.details.label(class="form-label") }}
-                                    {{ form.details(class="form-control") }}
+                                    {{ upload_form.details.label(class="form-label") }}
+                                    {{ upload_form.details(class="form-control") }}
                                 </div>
                                 {% if current_user.is_authenticate %}
                                 <div class="mb-3">
-                                    {{ form.private.label }} {{ form.private() }}
+                                    {{ upload_form.private.label }} {{ upload_form.private() }}
                                 </div>
                                 {% endif %}
                             </div>
                         </div>
-                        {{ form.submit(class="btn btn-primary") }}
+                        {{ upload_form.submit(class="btn btn-primary") }}
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <!-- Add Bookmark Modal -->
+    <div class="modal fade" id="addBookmarkOrGroupModal" tabindex="-1" aria-labelledby="addBookmarkModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addBookmarkModalLabel">Add Bookmark</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addBookmarkForm" action="{{ url_for('routes.create_bookmark') }}" method="POST">
+                        {{ bookmark_form.csrf_token }}
+                        <div class="mb-3">
+                            {{ bookmark_form.title.label(class="form-label") }}
+                            {{ bookmark_form.title(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ bookmark_form.href.label(class="form-label") }}
+                            {{ bookmark_form.href(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ bookmark_form.details.label(class="form-label") }}
+                            {{ bookmark_form.details(class="form-control") }}
+                        </div>
+                        {% if current_user.is_authenticated %}
+                        <div class="mb-3 form-check">
+                            {{ bookmark_form.private(class="form-check-input") }}
+                            {{ bookmark_form.private.label(class="form-check-label") }}
+                        </div>
+                        {% endif %}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" form="addBookmarkForm">Add</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}

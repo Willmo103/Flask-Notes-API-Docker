@@ -1,9 +1,7 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container">
-    <h1 class="mt-3">Welcome to Flask Notes API</h1>
-
+    <h2 class="mt-3">Info_Hub</h2>
     <div class="row mt-3">
         {% for note in notes %}
         {% include "note_card.html" %}
@@ -13,34 +11,6 @@
         {% endfor %}
     </div>
 </div>
-<!-- File Upload Modal -->
-<!-- File Upload Modal -->
-<div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="fileUploadModalLabel">Upload a File</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form method="POST" action="{{ url_for('routes.upload_file') }}" enctype="multipart/form-data"
-                    id="fileUploadForm">
-                    {{ form.hidden_tag() }}
-                    <div class="mb-3">
-                        {{ form.file.label }} {{ form.file(class="form-control") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.details.label }} {{ form.details(class="form-control") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.private.label }} {{ form.private() }}
-                    </div>
-                    {{ form.submit(class="btn btn-primary") }}
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-
+{% endblock %}
+{% block extra_js %}
 {% endblock %}

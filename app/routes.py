@@ -1,8 +1,8 @@
 from flask import flash, redirect, render_template, url_for, Blueprint, request
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
-from app.models import User, Note, File
-from app.forms import LoginForm, RegistrationForm, NoteForm, FileUploadForm
+from app.models import User, Note, File, Upload, Download
+from app.forms import LoginForm, RegistrationForm, NoteForm, FileUploadForm, BookmarkForm
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime as dt
@@ -13,20 +13,21 @@ endpoint = Blueprint("routes", __name__)
 
 @endpoint.context_processor
 def inject_forms():
-    form = FileUploadForm()
-    return dict(form=form)
+    upload_form = FileUploadForm()
+    bookmark_form = BookmarkForm()
+    return dict(upload_form=upload_form, bookmark_form=bookmark_form)
 
 
 @endpoint.route("/")
 @endpoint.route("/index")
 def index():
-    File.sync_files()
     notes = Note.return_index_page_notes(
         current_user.id if current_user.is_authenticated else None
     )
     files = File.return_index_page_files(
         current_user.id if current_user.is_authenticated else None
     )
+
     return render_template(
         "index.html",
         notes=notes,
@@ -40,6 +41,7 @@ def index():
 def upload_file():
     form = FileUploadForm()
     if form.validate_on_submit():
+        time_stamp = dt.utcnow().strftime("%Y%m%d%H%M%S")
         file = form.file.data
         if file.filename == "":
             flash("No selected file")
@@ -52,14 +54,22 @@ def upload_file():
             new_file = File(
                 filename,
                 user_id=current_user.id,
-                date_posted=dt.utcnow(),
+                date_posted=time_stamp,
                 private=form.private.data,
                 details=form.details.data,
             )
+            new_upload = Upload(
+                user_id=current_user.id,
+                file_id=filename,
+                date_uploaded=time_stamp,
+            )
         else:
             new_file = File(filename, date_posted=dt.utcnow())
-        db.session.add(new_file)
-        db.session.commit()
+            new_upload = Upload(file_id=filename, date_uploaded=time_stamp)
+
+        new_upload.save()
+        new_file.save()
+
         flash("File uploaded successfully")
         return redirect(url_for("routes.index"))
 
@@ -180,3 +190,38 @@ def search_notes():
             title=f"Search Results for {search_term}",
         )
     return redirect(url_for("routes.index"))
+
+@endpoint.route("/create_group", methods=["GET", "POST"])
+def create_group():
+    # Implement group creation logic here
+    pass
+
+
+@endpoint.route("/edit_group/<int:group_id>", methods=["GET", "POST"])
+def edit_group(group_id):
+    # Implement group editing logic here
+    pass
+
+
+@endpoint.route("/delete_group/<int:group_id>", methods=["POST"])
+def delete_group(group_id):
+    # Implement group deletion logic here
+    pass
+
+
+@endpoint.route("/create_bookmark", methods=["GET", "POST"])
+def create_bookmark():
+    # Implement bookmark creation logic here
+    pass
+
+
+@endpoint.route("/edit_bookmark/<int:bookmark_id>", methods=["GET", "POST"])
+def edit_bookmark(bookmark_id):
+    # Implement bookmark editing logic here
+    pass
+
+
+@endpoint.route("/delete_bookmark/<int:bookmark_id>", methods=["POST"])
+def delete_bookmark(bookmark_id):
+    # Implement bookmark deletion logic here
+    pass

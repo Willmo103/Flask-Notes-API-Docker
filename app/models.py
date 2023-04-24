@@ -1,10 +1,11 @@
 import os
-from typing import Generator
+from typing import Generator, List
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, and_
 from flask_login import UserMixin
 from datetime import datetime
 from app import db, login_manager
+from sqlalchemy.orm import Mapped
 
 _upload_folder = os.environ.get("UPLOADS_FOLDER")
 
@@ -15,11 +16,11 @@ def load_user(user_id):
 
 
 class User(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=True)
-    password_hash = db.Column(db.String(120), nullable=False)
-    notes = db.relationship("Note", backref="author", lazy=True)
+    id: int = db.Column(db.Integer, primary_key=True)
+    username: str = db.Column(db.String(20), unique=True, nullable=False)
+    email: str = db.Column(db.String(120), unique=True, nullable=True)
+    password_hash: str = db.Column(db.String(120), nullable=False)
+    notes: Mapped["Note"] = db.relationship("Note", backref="author", lazy=True)
     is_admin = db.Column(db.Boolean, nullable=False, default=False)
 
     def get_notes(self):
@@ -39,14 +40,14 @@ class User(UserMixin, db.Model):
 
 
 class Note(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=True, default=None)
-    content = db.Column(db.Text, nullable=True, default=None)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    user_id = db.Column(
+    id: int = db.Column(db.Integer, primary_key=True)
+    title: str = db.Column(db.String(100), nullable=True, default=None)
+    content: str = db.Column(db.Text, nullable=True, default=None)
+    date_posted: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user_id: Mapped["User"] = db.Column(
         db.Integer, db.ForeignKey("user.id"), nullable=True, default=None
     )
-    private = db.Column(db.Boolean, nullable=False, default=True)
+    private: bool = db.Column(db.Boolean, nullable=False, default=True)
 
     @staticmethod
     def get_all_anonymous_notes():
@@ -121,20 +122,26 @@ class File(db.Model):
         self.private = private
         self.details = details
 
-    @staticmethod
-    def get_all_user_files(user_id: int) -> list:
-        files = File.query.filter_by(user_id=user_id).all()
-        return files
-
-    @staticmethod
-    def new_file(filename, user_id) -> None:
-        new_file: File = File(filename, user_id, datetime.utcnow())
-        db.session.add(new_file)
+    def save(self) -> None:
+        db.session.add(self)
         db.session.commit()
 
     @staticmethod
-    def delete_file(file_id) -> None:
-        file: File = File.query.filter_by(id=file_id).first()
+    def get_all_user_files(user: User) -> list:
+        if user.is_authenticated:
+            return File.query.filter_by(user_id=user.id).all()
+
+    @staticmethod
+    def delete_file(file_id: int, user: User) -> None:
+        file: File
+        if not user.is_authenticated:
+            return
+        elif not user.is_admin:
+            file: File = File.query.filter(
+                and_(File.id == file_id, File.user_id == user.id)
+            ).first()
+        else:
+            file: File = File.query.filter_by(id=file_id).first()
         # delete file from uploads folder
         os.remove(os.path.join(_upload_folder, file.file_name))
         file.deleted = True
@@ -162,7 +169,7 @@ class File(db.Model):
                 db.session.commit()
 
     @staticmethod
-    def scan_folder() -> Generator(str):
+    def scan_folder() -> Generator[str, None, None]:
         files = []
         for file in os.listdir(_upload_folder):
             if file != ".gitkeep":
@@ -191,17 +198,32 @@ class Download(db.Model):
     download_date: datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
-    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    user_id: int = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        primary_key=True,
+        nullable=True,
+        default=None,
+    )
     file_id: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
-    def __init__(self, user_id: int, file_id: int) -> None:
-        self.download_date = datetime.utcnow()
+    def __init__(
+        self,
+        file_id: int,
+        user_id: int | None = None,
+        download_date: datetime = datetime.utcnow,
+    ) -> None:
+        self.download_date = download_date
         self.user = user_id
         self.file = file_id
 
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
     @staticmethod
-    def record_download(user, file):
-        dl: Download = Download(user, file)
+    def record_download(file: id, user: id, time: datetime) -> None:
+        dl: Download = Download(user, file, time)
         db.session.add(dl)
         db.session.commit()
 
@@ -210,13 +232,28 @@ class Upload(db.Model):
     upload_date: datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
-    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    user_id: int = db.Column(
+        db.Integer,
+        db.ForeignKey("user.id"),
+        primary_key=True,
+        nullable=True,
+        default=None,
+    )
     file_id: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
-    def __init__(self, user_id: int, file_id: int) -> None:
-        self.upload_date = datetime.utcnow()
+    def __init__(
+        self,
+        file_id: int,
+        user_id: int | None = None,
+        upload_date: datetime = datetime.utcnow,
+    ) -> None:
+        self.upload_date = upload_date
         self.user_id = user_id
         self.file_id = file_id
+
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
 
     @staticmethod
     def record_upload(user_id: int, file_id: int) -> None:
@@ -226,5 +263,36 @@ class Upload(db.Model):
 
 
 class Bookmark(db.Model):
-    pass
-    # TODO: implement bookmarks
+    id: int = db.Column(db.Integer, primary_key=True)
+    date_posted: datetime = db.Column(
+        db.DateTime, nullable=False, default=datetime.utcnow
+    )
+    title: str = db.Column(db.String(100), nullable=False)
+    href: str = db.Column(db.Text, nullable=False)
+    details: str = db.Column(db.String(100), nullable=True, default=None)
+    private: bool = db.Column(db.Boolean, nullable=False, default=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    group_id: int = db.Column(db.Integer, db.ForeignKey("group.id"), nullable=True)
+
+    def __repr__(self):
+        return f"Bookmark('{self.title}', '{self.href}', '{self.private}')"
+
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
+
+class Group(db.Model):
+    id: int = db.Column(db.Integer, primary_key=True)
+    name: str = db.Column(db.String(100), nullable=False)
+    private: bool = db.Column(db.Boolean, nullable=False, default=False)
+    user_id: int = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    bookmarks: Mapped["Bookmark"] = db.relationship("Bookmark", backref="group", lazy=True)
+
+    def __repr__(self):
+        return f"Group('{self.name}', '{self.private}')"
+
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+

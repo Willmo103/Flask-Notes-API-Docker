@@ -1,8 +1,11 @@
+import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy import or_, and_
 from flask_login import UserMixin
 from datetime import datetime
 from app import db, login_manager
+
+_upload_folder = os.environ.get("UPLOADS_FOLDER")
 
 
 @login_manager.user_loader
@@ -78,3 +81,87 @@ class Note(db.Model):
 
     def __repr__(self):
         return f"Note('{self.title}', '{self.date_posted}')"
+
+    @staticmethod
+    def return_index_page_notes(id):
+        notes = []
+        for note in Note.query.all():
+            if note.is_anonymous() or note.user_id == id:
+                notes.append(note)
+        return notes
+
+
+class File(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    last_downloaded = db.Column(db.DateTime, nullable=True, default=None)
+    owner_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=True, default=None
+    )
+    file_name = db.Column(db.String(100), nullable=True, default=None)
+    file_size = db.Column(db.String, nullable=True, default=None)
+    file_type = db.Column(db.String(100), nullable=True, default=None)
+    deleted = db.Column(db.Boolean, nullable=False, default=False)
+    date_deleted = db.Column(db.DateTime, nullable=True, default=None)
+
+    def __init__(self, file_name, owner_id=None, date_posted=None):
+        self.file_name = file_name
+        self.owner_id = owner_id
+        self.date_posted = date_posted
+
+    @staticmethod
+    def get_all_user_files(user_id: int):
+        files = File.query.filter_by(user_id=user_id).all()
+        return files
+
+    @staticmethod
+    def new_file(filename, owner_id):
+        new_file = File(filename, owner_id, datetime.utcnow())
+        db.session.add(new_file)
+        db.session.commit()
+
+    @staticmethod
+    def delete_file(file_id):
+        file = File.query.filter_by(id=file_id).first()
+        file.deleted = True
+        file.date_deleted = datetime.utcnow()
+        db.session.update(file)
+        db.session.commit()
+
+    @staticmethod
+    def load_file_info():
+        files = []
+        File.read_info_from_uploads_dir()
+        for file in File.query.all():
+            if file.deleted is False:
+                files.append(file)
+        return files
+
+    @staticmethod
+    def return_index_page_files(id):
+        files = []
+        File.read_info_from_uploads_dir()
+        for file in File.query.all():
+            if file.owner_id is None or file.owner_id == id:
+                files.append(file)
+        return files
+
+    @staticmethod
+    def read_info_from_uploads_dir():
+        for file in File.scan_folder():
+            file_data = File.query.filter_by(file_name=file).first()
+            if file_data is not None:
+                if file_data.file_size is None:
+                    file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
+                if file_data.file_type is None:
+                    file_data.file_type = file.split(".")[-1]
+                db.session.update(file_data)
+                db.session.commit()
+
+    @staticmethod
+    def scan_folder():
+        files = []
+        for file in os.listdir(_upload_folder):
+            if file != ".gitkeep":
+                files.append(file)
+            yield file

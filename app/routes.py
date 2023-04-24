@@ -1,7 +1,7 @@
 from flask import flash, redirect, render_template, url_for, Blueprint, request
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
-from app.models import User, Note
+from app.models import User, Note, File
 from app.forms import LoginForm, RegistrationForm, NoteForm
 
 endpoint = Blueprint("routes", __name__)
@@ -10,8 +10,16 @@ endpoint = Blueprint("routes", __name__)
 @endpoint.route("/")
 @endpoint.route("/index")
 def index():
-    notes = Note.get_all_anonymous_notes()
-    return render_template("index.html", notes=notes, user=current_user)
+    notes = Note.return_index_page_notes(current_user.id)
+    files = File.return_index_page_files(current_user.id)
+    return render_template(
+        "index.html",
+        notes=notes,
+        files=files,
+        user=current_user,
+        title="Info_Hub",
+    )
+
 
 
 @endpoint.route("/login", methods=["GET", "POST"])

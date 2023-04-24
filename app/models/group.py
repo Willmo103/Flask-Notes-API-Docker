@@ -1,18 +1,14 @@
 from typing import List
-from sqlalchemy.orm import Mapped
 from sqlalchemy import or_
 from app import db
-from .user import User
-from .bookmark import Bookmark
+
 
 class Group(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(100), nullable=False)
     private: bool = db.Column(db.Boolean, nullable=False, default=False)
-    user_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    bookmarks: Mapped["Bookmark"] = db.relationship(
-        "Bookmark", backref="group", lazy=True
-    )
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    bookmarks = db.relationship("Bookmark", backref="group", lazy=True)
 
     def __init__(self, name: str, private: bool, user_id: int) -> None:
         self.name = name
@@ -22,13 +18,13 @@ class Group(db.Model):
     def __repr__(self) -> str:
         return f"Group('{self.name}', '{self.private}')"
 
-    def save(self, user: User) -> None:
+    def save(self, user) -> None:
         if not Group.group_exists(self.name, user):
             self.user_id = user.id
         db.session.add(self)
         db.session.commit()
 
-    def group_exists(name: str, user: User | None) -> bool:
+    def group_exists(name: str, user) -> bool:
         if user is not None:
             if user.is_authenticated:
                 return (
@@ -40,12 +36,12 @@ class Group(db.Model):
     def is_private(self) -> bool:
         return self.private
 
-    def add_bookmark(self, bookmark: Bookmark) -> None:
+    def add_bookmark(self, bookmark) -> None:
         self.bookmarks.append(bookmark)
         db.session.commit()
 
     @staticmethod
-    def return_index_page_groups_and_bookmarks(user: User) -> List | None:
+    def return_index_page_groups_and_bookmarks(user) -> List | None:
         if user.is_authenticated:
             return Group.query.filter_by(
                 or_(

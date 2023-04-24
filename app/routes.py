@@ -37,12 +37,8 @@ def inject_forms() -> dict:
 @endpoint.route("/")
 @endpoint.route("/index")
 def index() -> str | Response:
-    notes = Note.return_index_page_notes(
-        current_user
-    )
-    files = File.return_index_page_files(
-        current_user
-    )
+    notes = Note.return_index_page_notes(current_user)
+    files = File.return_index_page_files(current_user)
 
     return render_template(
         "index.html",

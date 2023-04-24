@@ -1,19 +1,19 @@
 from datetime import datetime
-from sqlalchemy.orm import Mapped
 from app import db
+
 
 class Download(db.Model):
     download_date: datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
-    user_id: Mapped[int] = db.Column(
+    user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id"),
         primary_key=True,
         nullable=True,
         default=None,
     )
-    file_id: Mapped[int] = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+    file_id = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
 
     def __init__(
         self,
@@ -34,4 +34,3 @@ class Download(db.Model):
         dl: Download = Download(user, file, time)
         db.session.add(dl)
         db.session.commit()
-

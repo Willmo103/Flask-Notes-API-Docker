@@ -3,7 +3,8 @@ from datetime import datetime
 from sqlalchemy import or_, and_
 from sqlalchemy.orm import Mapped
 from app import db
-from .user import User
+from . import User
+
 
 class Note(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)

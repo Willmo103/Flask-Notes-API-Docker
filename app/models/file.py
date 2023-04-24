@@ -1,6 +1,4 @@
-from sqlalchemy.orm import Mapped
 from app import db
-from .user import User
 from typing import List, Generator
 from datetime import datetime
 from sqlalchemy import or_, and_
@@ -40,9 +38,8 @@ class File(db.Model):
         self.private = private
         self.details = details
 
-    def save(self) -> None:
-        db.session.add(self)
-        db.session.commit()
+    def __repr__(self) -> str:
+        return f"File('{self.file_name}', '{self.date_posted}')"
 
     @staticmethod
     def get_all_user_files(user: User) -> List | None:
@@ -50,7 +47,7 @@ class File(db.Model):
             return File.query.filter_by(user_id=user.id).all()
 
     @staticmethod
-    def delete_file(file_id: int, user: User) -> None:
+    def delete_file(file_id: int, user) -> None:
         file: File
         if not user.is_authenticated:
             return
@@ -68,7 +65,7 @@ class File(db.Model):
         db.session.commit()
 
     @staticmethod
-    def return_index_page_files(user: User) -> List | None:
+    def return_index_page_files(user) -> List | None:
         File.read_info_from_uploads_dir()
         if user is not None and user.is_authenticated:
             return File.query.filter(
@@ -103,7 +100,7 @@ class File(db.Model):
             yield file
 
     @staticmethod
-    def get_admin_files(current_user: User) -> List | None:
+    def get_admin_files(current_user) -> List | None:
         if current_user.is_admin():
             return File.query.all()
 
@@ -116,5 +113,6 @@ class File(db.Model):
     def is_private(self) -> bool:
         return self.private
 
-    def __repr__(self) -> str:
-        return f"File('{self.file_name}', '{self.date_posted}')"
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()

@@ -75,6 +75,7 @@ class FileUploadForm(FlaskForm):
     private = BooleanField("Private")
     submit = SubmitField("Upload")
 
+
 class BookmarkForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     href = URLField("URL", validators=[DataRequired(), URL()])

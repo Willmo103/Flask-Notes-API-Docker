@@ -1,30 +1,46 @@
-from flask import flash, redirect, render_template, url_for, Blueprint, request
+from typing import List, Optional
+from flask import (
+    Response,
+    flash,
+    redirect,
+    render_template,
+    url_for,
+    Blueprint,
+    request,
+)
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
+from flask_wtf import FlaskForm
 from app.models import User, Note, File, Upload, Download
-from app.forms import LoginForm, RegistrationForm, NoteForm, FileUploadForm, BookmarkForm
+from app.forms import (
+    LoginForm,
+    RegistrationForm,
+    NoteForm,
+    FileUploadForm,
+    BookmarkForm,
+)
 from werkzeug.utils import secure_filename
 import os
 from datetime import datetime as dt
 
-upload_folder = os.environ.get("UPLOAD_FOLDER")
+_upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 endpoint = Blueprint("routes", __name__)
 
 
 @endpoint.context_processor
-def inject_forms():
-    upload_form = FileUploadForm()
-    bookmark_form = BookmarkForm()
+def inject_forms() -> dict:
+    upload_form: FlaskForm = FileUploadForm()
+    bookmark_form: FlaskForm = BookmarkForm()
     return dict(upload_form=upload_form, bookmark_form=bookmark_form)
 
 
 @endpoint.route("/")
 @endpoint.route("/index")
-def index():
-    notes = Note.return_index_page_notes(
+def index() -> str | Response:
+    notes: Optional(list[Note] | None) = Note.return_index_page_notes(
         current_user.id if current_user.is_authenticated else None
     )
-    files = File.return_index_page_files(
+    files: Optional(list[File] | None) = File.return_index_page_files(
         current_user.id if current_user.is_authenticated else None
     )
 
@@ -38,7 +54,7 @@ def index():
 
 
 @endpoint.route("/upload_file", methods=["GET", "POST"])
-def upload_file():
+def upload_file() -> str | Response:
     form = FileUploadForm()
     if form.validate_on_submit():
         time_stamp = dt.utcnow().strftime("%Y%m%d%H%M%S")
@@ -49,7 +65,7 @@ def upload_file():
 
         if file:
             filename = secure_filename(file.filename)
-            file.save(os.path.join(upload_folder, filename))
+            file.save(os.path.join(_upload_folder, filename))
         if current_user.is_authenticated:
             new_file = File(
                 filename,
@@ -78,7 +94,7 @@ def upload_file():
 
 
 @endpoint.route("/login", methods=["GET", "POST"])
-def login():
+def login() -> str | Response:
     if current_user.is_authenticated:
         return redirect(url_for("routes.index"))
     form = LoginForm()
@@ -93,13 +109,13 @@ def login():
 
 
 @endpoint.route("/logout")
-def logout():
+def logout() -> Response:
     logout_user()
     return redirect(url_for("routes.index"))
 
 
 @endpoint.route("/register", methods=["GET", "POST"])
-def register():
+def register() -> str | Response:
     if current_user.is_authenticated:
         return redirect(url_for("routes.index"))
     form = RegistrationForm()
@@ -119,7 +135,7 @@ def register():
 
 
 @endpoint.route("/note/add", methods=["GET", "POST"])
-def note():
+def note() -> str | Response:
     form = NoteForm()
     if form.validate_on_submit():
         note = Note(
@@ -137,7 +153,7 @@ def note():
 
 @endpoint.route("/note/<int:note_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_note(note_id):
+def edit_note(note_id) -> str | Response:
     note = Note.query.get_or_404(note_id)
     if current_user.is_admin() or note.user_id == current_user.id:
         form = NoteForm(title=note.title, content=note.content, private=note.private)
@@ -156,7 +172,7 @@ def edit_note(note_id):
 
 @endpoint.route("/note/<int:note_id>/delete", methods=["GET", "POST"])
 @login_required
-def delete_note(note_id):
+def delete_note(note_id) -> Response:
     note = Note.query.get_or_404(note_id)
     if note.is_owned_by_user(current_user.id) or current_user.is_admin:
         db.session.delete(note)
@@ -169,14 +185,14 @@ def delete_note(note_id):
 
 @endpoint.route("/user/<int:user_id>/notes")
 @login_required
-def get_user_notes(user_id):
+def get_user_notes(user_id) -> Response:
     user = User.query.get_or_404(user_id)
     notes = user.get_notes()
     return render_template("index.html", notes=notes, user=user)
 
 
 @endpoint.route("/search", methods=["GET", "POST"])
-def search_notes():
+def search_notes() -> Response:
     if request.method == "POST":
         search_term = request.form["search_term"]
         try:
@@ -191,37 +207,38 @@ def search_notes():
         )
     return redirect(url_for("routes.index"))
 
+
 @endpoint.route("/create_group", methods=["GET", "POST"])
-def create_group():
+def create_group() -> Response:
     # Implement group creation logic here
     pass
 
 
 @endpoint.route("/edit_group/<int:group_id>", methods=["GET", "POST"])
-def edit_group(group_id):
+def edit_group(group_id) -> Response:
     # Implement group editing logic here
     pass
 
 
 @endpoint.route("/delete_group/<int:group_id>", methods=["POST"])
-def delete_group(group_id):
+def delete_group(group_id) -> Response:
     # Implement group deletion logic here
     pass
 
 
 @endpoint.route("/create_bookmark", methods=["GET", "POST"])
-def create_bookmark():
+def create_bookmark() -> Response:
     # Implement bookmark creation logic here
     pass
 
 
 @endpoint.route("/edit_bookmark/<int:bookmark_id>", methods=["GET", "POST"])
-def edit_bookmark(bookmark_id):
+def edit_bookmark(bookmark_id) -> Response:
     # Implement bookmark editing logic here
     pass
 
 
 @endpoint.route("/delete_bookmark/<int:bookmark_id>", methods=["POST"])
-def delete_bookmark(bookmark_id):
+def delete_bookmark(bookmark_id) -> Response:
     # Implement bookmark deletion logic here
     pass

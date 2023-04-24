@@ -120,5 +120,9 @@ def search_notes():
         except AttributeError:
             id = None
         notes = Note.search(search_term, id)
-        return render_template("search_results.html", notes=notes, title=f"Search Results for {search_term}")
+        return render_template(
+            "search_results.html",
+            notes=notes,
+            title=f"Search Results for {search_term}",
+        )
     return redirect(url_for("routes.index"))

@@ -52,4 +52,3 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
             raise ValidationError("Please use a different username.")
-

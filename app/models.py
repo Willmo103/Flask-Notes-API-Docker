@@ -49,7 +49,7 @@ class Note(db.Model):
         notes = []
         notes_query = Note.query.all()
         for note in notes_query:
-            if  note.is_anonymous() or note.private is False:
+            if note.is_anonymous() or note.private is False:
                 notes.append(note)
         return notes
 
@@ -59,22 +59,17 @@ class Note(db.Model):
         # If user_id is None, only search anonymous notes
         if user_id is None:
             notes = Note.query.filter(
-                and_(
-                    Note.content.contains(search_term),
-                    Note.user_id.is_(None)
-                )
+                and_(Note.content.contains(search_term), Note.user_id.is_(None))
             ).all()
         else:
             # Search for notes that are either owned by the user or are anonymous
             notes = Note.query.filter(
                 Note.content.contains(search_term),
-                or_(
-                    Note.user_id == user_id,
-                    Note.user_id.is_(None)
-                )
+                or_(Note.user_id == user_id, Note.user_id.is_(None)),
             ).all()
 
         return notes
+
     def is_anonymous(self):
         return self.user_id is None
 

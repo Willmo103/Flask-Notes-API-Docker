@@ -83,6 +83,7 @@
         {% block content %}{% endblock %}
     </main>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function () {

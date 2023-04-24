@@ -85,42 +85,56 @@
     {% endif %}
     {% endwith %}
     <main class="container">
-        {% block content %}
-        <!-- File Upload Modal -->
-        <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel"
-            aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="fileUploadModalLabel">Upload a File</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form method="POST" action="{{ url_for('routes.upload_file') }}" enctype="multipart/form-data"
-                            id="fileUploadForm">
-                            <div class="mb-3">
-                                <label for="file" class="form-label">Select a file</label>
-                                <input class="form-control" type="file" id="file" name="file">
-                            </div>
-                            <div class="mb-3">
-                                <label for="dropZone" class="form-label">Or drag and drop a file here</label>
-                                <div id="dropZone" class="border rounded p-2"
-                                    style="height: 150px; background-color: #f8f9fa;">
-                                    Drag and drop a file here
+        {% block content %}{% endblock %}
+    </main>
+    <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="fileUploadModalLabel">Upload a File</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form method="POST" action="{{ url_for('routes.upload_file') }}" enctype="multipart/form-data"
+                        id="fileUploadForm">
+                        {{ form.hidden_tag() }}
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    {{ form.file.label(class="form-label") }}
+                                    {{ form.file(class="form-control") }}
+                                </div>
+                                <div class="mb-3">
+                                    {{ form.file_dz.label(class="form-label") }}
+                                    <div id="dropZone" class="border rounded p-2 dropzone">
+                                        {{ form.file_dz() }}
+                                        Drag and drop a file here
+                                    </div>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary">Upload</button>
-                        </form>
-                    </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    {{ form.details.label(class="form-label") }}
+                                    {{ form.details(class="form-control") }}
+                                </div>
+                                {% if current_user.is_authenticate %}
+                                <div class="mb-3">
+                                    {{ form.private.label }} {{ form.private() }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {{ form.submit(class="btn btn-primary") }}
+                    </form>
                 </div>
             </div>
         </div>
+    </div>
 
-
-        {% endblock %}
-    </main>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             setTimeout(function () {
@@ -130,9 +144,6 @@
                 });
             }, 3000);
         });
-        document.addEventListener("DOMContentLoaded", function () {
-            var dropZone = document.getElementById("dropZone");
-            drop
     </script>
 
 </body>

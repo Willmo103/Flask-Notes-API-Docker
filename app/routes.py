@@ -4,14 +4,23 @@ from app import db
 from app.models import User, Note, File
 from app.forms import LoginForm, RegistrationForm, NoteForm, FileUploadForm
 from werkzeug.utils import secure_filename
-import os, datetime
+import os
+from datetime import datetime as dt
 
+upload_folder = os.environ.get("UPLOAD_FOLDER")
 endpoint = Blueprint("routes", __name__)
+
+
+@endpoint.context_processor
+def inject_forms():
+    form = FileUploadForm()
+    return dict(form=form)
 
 
 @endpoint.route("/")
 @endpoint.route("/index")
 def index():
+    File.sync_files()
     notes = Note.return_index_page_notes(
         current_user.id if current_user.is_authenticated else None
     )
@@ -27,13 +36,7 @@ def index():
     )
 
 
-import os
-from werkzeug.utils import secure_filename
-from app.forms import FileUploadForm
-
-# Add this to your routes.py
 @endpoint.route("/upload_file", methods=["GET", "POST"])
-@login_required
 def upload_file():
     form = FileUploadForm()
     if form.validate_on_submit():
@@ -44,17 +47,17 @@ def upload_file():
 
         if file:
             filename = secure_filename(file.filename)
-            file.save(os.path.join(endpoint.config["UPLOAD_FOLDER"], filename))
+            file.save(os.path.join(upload_folder, filename))
         if current_user.is_authenticated:
             new_file = File(
-                name=filename,
+                filename,
                 user_id=current_user.id,
-                date_posted=datetime.utcnow(),
+                date_posted=dt.utcnow(),
                 private=form.private.data,
                 details=form.details.data,
             )
         else:
-            new_file = File(name=filename, date_posted=datetime.utcnow())
+            new_file = File(filename, date_posted=dt.utcnow())
         db.session.add(new_file)
         db.session.commit()
         flash("File uploaded successfully")

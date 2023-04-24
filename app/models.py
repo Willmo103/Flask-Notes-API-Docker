@@ -90,23 +90,23 @@ class Note(db.Model):
 
 
 class File(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date_posted = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    last_downloaded = db.Column(db.DateTime, nullable=True, default=None)
-    owner_id = db.Column(
+    id: int = db.Column(db.Integer, primary_key=True)
+    date_posted: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    last_downloaded: datetime = db.Column(db.DateTime, nullable=True, default=None)
+    owner_id: int = db.Column(
         db.Integer, db.ForeignKey("user.id"), nullable=True, default=None
     )
-    file_name = db.Column(db.String(100), nullable=True, default=None)
-    file_size = db.Column(db.String, nullable=True, default=None)
-    file_type = db.Column(db.String(100), nullable=True, default=None)
-    deleted = db.Column(db.Boolean, nullable=False, default=False)
-    date_deleted = db.Column(db.DateTime, nullable=True, default=None)
-    private = db.Column(db.Boolean, nullable=False, default=True)
-    details = db.Column(db.String(200), nullable=True, default=None)
+    file_name: str = db.Column(db.String(100), nullable=True, default=None)
+    file_size: str = db.Column(db.String, nullable=True, default=None)
+    file_type: str = db.Column(db.String(100), nullable=True, default=None)
+    deleted: bool = db.Column(db.Boolean, nullable=False, default=False)
+    date_deleted: datetime = db.Column(db.DateTime, nullable=True, default=None)
+    private: bool = db.Column(db.Boolean, nullable=False, default=True)
+    details: str = db.Column(db.String(200), nullable=True, default=None)
 
     def __init__(
-        self, file_name, owner_id=None, date_posted=None, private=False, details=None
-    ):
+        self, file_name: str, owner_id: int = None, date_posted: datetime = None, private: bool = False, details: str | None = None
+    ) -> None:
         self.file_name = file_name
         self.owner_id = owner_id
         self.date_posted = date_posted
@@ -114,35 +114,29 @@ class File(db.Model):
         self.details = details
 
     @staticmethod
-    def get_all_user_files(user_id: int):
+    def get_all_user_files(user_id: int) -> list:
         files = File.query.filter_by(user_id=user_id).all()
         return files
 
     @staticmethod
-    def new_file(filename, owner_id):
-        new_file = File(filename, owner_id, datetime.utcnow())
+    def new_file(filename, owner_id) -> None:
+        new_file: File = File(filename, owner_id, datetime.utcnow())
         db.session.add(new_file)
         db.session.commit()
 
     @staticmethod
-    def delete_file(file_id):
-        file = File.query.filter_by(id=file_id).first()
+    def delete_file(file_id) -> None:
+        file: File = File.query.filter_by(id=file_id).first()
+        # delete file from uploads folder
+        os.remove(os.path.join(_upload_folder, file.file_name))
         file.deleted = True
         file.date_deleted = datetime.utcnow()
         db.session.update(file)
         db.session.commit()
 
     @staticmethod
-    def load_file_info():
-        files = []
-        File.read_info_from_uploads_dir()
-        for file in File.query.all():
-            if file.deleted is False:
-                files.append(file)
-        return files
-
-    @staticmethod
     def return_index_page_files(id):
+        File.read_info_from_uploads_dir()
         return File.query.filter(
             or_(File.owner_id == id, File.owner_id.is_(None), File.private.is_(False))
         ).all()
@@ -168,9 +162,39 @@ class File(db.Model):
             yield file
 
     @staticmethod
-    def get_admin_files():
-        files = []
-        for file in File.query.all():
-            if file.deleted is False:
-                files.append(file)
-        return files
+    def get_admin_files(current_user: User) -> list:
+        if current_user.is_admin():
+            return File.query.all()
+
+
+class Download(db.Model):
+    download_date: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    file: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+
+    def __init__(self, user, file):
+        self.download_date = datetime.utcnow()
+        self.user = user
+        self.file = file
+
+    @staticmethod
+    def record_download(user, file):
+        dl: Download = Download(user, file)
+        db.session.add(dl)
+        db.session.commit()
+
+class Upload(db.Model):
+    upload_date: datetime = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    user: int = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
+    file: int = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+
+    def __init__(self, user, file) -> None:
+        self.upload_date = datetime.utcnow()
+        self.user = user
+        self.file = file
+
+    @staticmethod
+    def record_upload(user, file) -> None:
+        ul: Upload = Upload(user, file)
+        db.session.add(ul)
+        db.session.commit()

@@ -13,8 +13,9 @@ from wtforms.validators import (
     Email,
     EqualTo,
     ValidationError,
+    Optional
 )
-from flask_wtf.file import FileField, FileRequired
+from flask_wtf.file import FileField
 
 
 class LoginForm(FlaskForm):
@@ -51,8 +52,20 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("Please use a different username.")
 
 
+class AtLeastOneFileRequired:
+    def __init__(self, message=None):
+        if not message:
+            message = "At least one file is required"
+        self.message = message
+
+    def __call__(self, form, field):
+        other_field = form.file if field.name == 'file_dz' else form.file_dz
+        if not field.data and not other_field.data:
+            raise ValidationError(self.message)
+
 class FileUploadForm(FlaskForm):
-    file = FileField("Select a file", validators=[FileRequired()])
+    file = FileField("Select a file", validators=[Optional(), AtLeastOneFileRequired()])
+    file_dz = FileField("Select a file", validators=[Optional(), AtLeastOneFileRequired()])
     details = StringField("Details", validators=[Length(max=200)])
     private = BooleanField("Private")
     submit = SubmitField("Upload")

@@ -42,22 +42,18 @@ class File(db.Model):
         return f"File('{self.file_name}', '{self.date_posted}')"
 
     @staticmethod
-    def get_all_user_files(user: User) -> List | None:
-        if user.is_authenticated:
-            return File.query.filter_by(user_id=user.id).all()
+    def get_all_user_files(user_id) -> List | None:
+            return File.query.filter_by(user_id=user_id).all()
 
     @staticmethod
     def delete_file(file_id: int, user) -> None:
-        file: File
-        if not user.is_authenticated:
-            return
-        elif not user.is_admin:
+        file: File = File.query.filter_by(id=file_id).first()
+        if file:
             file: File = File.query.filter(
                 and_(File.id == file_id, File.user_id == user.id)
             ).first()
         else:
             file: File = File.query.filter_by(id=file_id).first()
-        # delete file from uploads folder
         os.remove(os.path.join(_upload_folder, file.file_name))
         file.deleted = True
         file.date_deleted = datetime.utcnow()
@@ -65,12 +61,12 @@ class File(db.Model):
         db.session.commit()
 
     @staticmethod
-    def return_index_page_files(user) -> List | None:
+    def return_index_page_files(user_id: int) -> List | None:
         File.read_info_from_uploads_dir()
-        if user is not None and user.is_authenticated:
+        if user_id is not None:
             return File.query.filter(
                 or_(
-                    File.user_id == user.id,
+                    File.user_id == user_id,
                     File.user_id.is_(None),
                     File.private.is_(False),
                 )

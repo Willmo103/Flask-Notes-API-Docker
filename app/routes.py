@@ -1,4 +1,3 @@
-from typing import List, Optional
 from flask import (
     Response,
     flash,
@@ -37,8 +36,12 @@ def inject_forms() -> dict:
 @endpoint.route("/")
 @endpoint.route("/index")
 def index() -> str | Response:
-    notes = Note.return_index_page_notes(current_user)
-    files = File.return_index_page_files(current_user)
+    if current_user.is_authenticated:
+        id = current_user.get_id()
+    else:
+        id = None
+    notes = Note.return_index_page_notes(id)
+    files = File.return_index_page_files(id)
 
     return render_template(
         "index.html",

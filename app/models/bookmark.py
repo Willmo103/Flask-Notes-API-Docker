@@ -1,4 +1,3 @@
-from sqlalchemy.orm import Mapped
 from app import db
 from datetime import datetime
 

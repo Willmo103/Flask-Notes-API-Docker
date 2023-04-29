@@ -35,12 +35,7 @@ class Note(db.Model):
 
     @staticmethod
     def get_all_anonymous_notes() -> List | None:
-        notes = []
-        notes_query = Note.query.all()
-        for note in notes_query:
-            if note.is_anonymous() or note.private is False:
-                notes.append(note)
-        return notes
+        return Note.query.filter_by(user_id=None).all()
 
     @staticmethod
     def search(search_term: str, user_id) -> List | None:
@@ -68,5 +63,5 @@ class Note(db.Model):
                 )
             ).all()
         return Note.query.filter(
-            or_(Note.user_id == id, Note.user_id.is_(None), Note.private.is_(False))
+            or_(Note.user_id.is_(None), Note.private.is_(False))
         ).all()

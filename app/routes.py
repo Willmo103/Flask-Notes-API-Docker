@@ -37,11 +37,11 @@ def inject_forms() -> dict:
 @endpoint.route("/index")
 def index() -> str | Response:
     if current_user.is_authenticated:
-        id = current_user.get_id()
+        user_id = current_user.id
     else:
-        id = None
-    notes = Note.return_index_page_notes(id)
-    files = File.return_index_page_files(id)
+        user_id = None
+    notes = Note.return_index_page_notes(user_id)
+    files = File.return_index_page_files(user_id)
 
     return render_template(
         "index.html",

@@ -75,10 +75,15 @@ class FileUploadForm(FlaskForm):
     private = BooleanField("Private")
     submit = SubmitField("Upload")
 
+class GroupForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired(), Length(max=200)])
+    description = StringField("Description", validators=[Length(max=200)])
+    submit = SubmitField("Add")
 
 class BookmarkForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     href = URLField("URL", validators=[DataRequired(), URL()])
     details = TextAreaField("Details (optional)")
+    group = StringField("Group", validators=[Length(max=200), DataRequired()])
     private = BooleanField("Private")
     submit = SubmitField("Add")

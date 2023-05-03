@@ -18,7 +18,7 @@ from app.forms import (
     FileUploadForm,
     BookmarkForm,
 )
-from werkzeug.utils import secure_filename
+from werkzeug.utils import secure_filename as s_fn
 import os
 from datetime import datetime as dt
 
@@ -55,38 +55,45 @@ def index() -> str | Response:
 @endpoint.route("/upload_file", methods=["GET", "POST"])
 def upload_file() -> str | Response:
     form = FileUploadForm()
-    if form.validate_on_submit():
-        time_stamp = dt.utcnow().strftime("%Y%m%d%H%M%S")
-        file = form.file.data
-        if file.filename == "":
-            flash("No selected file")
-            return redirect(request.url)
+    time_stamp = dt.utcnow().strftime("%Y%m%d%H%M%S")
+    if form.file.data is None:
+        uploaded_file = form.file_dz.data
+    elif form.file_dz.data is None:
+        uploaded_file = form.file.data
 
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(_upload_folder, filename))
-        if current_user.is_authenticated:
-            new_file = File(
-                filename,
-                user_id=current_user.id,
-                date_posted=time_stamp,
-                private=form.private.data,
-                details=form.details.data,
-            )
-            new_upload = Upload(
-                user_id=current_user.id,
-                file_id=filename,
-                date_uploaded=time_stamp,
-            )
-        else:
-            new_file = File(filename, date_posted=dt.utcnow())
-            new_upload = Upload(file_id=filename, date_uploaded=time_stamp)
+    filename = uploaded_file.filename
+    content_type = uploaded_file.content_type
+    content_length = uploaded_file.content_length
 
-        new_upload.save()
-        new_file.save()
+    print(filename)
+    print(content_type)
+    print(content_length)
 
-        flash("File uploaded successfully")
-        return redirect(url_for("routes.index"))
+    if uploaded_file:
+        secure_filename = s_fn(filename)
+        uploaded_file.save(os.path.join(_upload_folder, secure_filename))
+    if current_user.is_authenticated:
+        new_file = File(
+            secure_filename,
+            user_id=current_user.id,
+            date_posted=time_stamp,
+            private=form.private.data,
+            details=form.details.data,
+        )
+        new_upload = Upload(
+            user_id=current_user.id,
+            file_id=secure_filename,
+            uplaod_date=time_stamp,
+        )
+    else:
+        new_file = File(secure_filename, date_posted=dt.utcnow())
+        new_upload = Upload(file_id=secure_filename, date_uploaded=time_stamp)
+
+    new_upload.save()
+    new_file.save()
+
+    flash("File uploaded successfully")
+    return redirect(url_for("routes.index"))
 
     flash("File upload failed")
     return redirect(url_for("routes.index"))
@@ -206,6 +213,12 @@ def search_notes() -> Response:
         )
     return redirect(url_for("routes.index"))
 
+@endpoint.routes("/user/files")
+@login_required
+def get_user_files(user_id) -> Response:
+    user = User.query.get_or_404(user_id)
+    files = user.get_files()
+    return render_template("index.html", files=files, user=user)
 
 @endpoint.route("/create_group", methods=["GET", "POST"])
 def create_group() -> Response:

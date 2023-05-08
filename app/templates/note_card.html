@@ -1,0 +1,36 @@
+<!-- note_card.html -->
+<div class="row-md-3">
+    <div class="card my-3">
+        <div class="card-body">
+            {% if note.private %}
+            <span class="badge bg-secondary">Private</span>
+            {% endif %}
+            <h5 class="card-title">{{ note.title }}</h5>
+            <p class="card-text">{{ note.content | markdown | striptags | truncate(100, True) }}</p>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                data-bs-target="#noteModal{{ note.id }}">Read More</button>
+        </div>
+    </div>
+</div>
+
+<!-- Note Modal -->
+<div class="modal fade" id="noteModal{{ note.id }}" tabindex="-1" aria-labelledby="noteModalLabel{{ note.id }}"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="noteModalLabel{{ note.id }}">{{ note.title }}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {{ note.content | markdown | safe }}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('routes.edit_note', note_id=note.id, user=user) }}" class="btn btn-warning">Edit</a>
+                <a href="{{ url_for('routes.delete_note', note_id=note.id, user=user ) }}"
+                    class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>

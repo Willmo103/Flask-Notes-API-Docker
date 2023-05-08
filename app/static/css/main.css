@@ -2,3 +2,7 @@
 body {
     padding: 1px;
 }
+#dropZone.drag-over {
+    border: 2px dashed #007bff;
+    background-color: #f8f9fa;
+}

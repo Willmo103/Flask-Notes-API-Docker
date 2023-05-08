@@ -1,5 +1,4 @@
-from flask import flash, redirect, url_for
-from app.models import User, Note
+from app.models import User
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
@@ -7,8 +6,7 @@ from wtforms import (
     BooleanField,
     SubmitField,
     TextAreaField,
-    SelectField,
-    IntegerField,
+    URLField,
 )
 from wtforms.validators import (
     DataRequired,
@@ -16,8 +14,10 @@ from wtforms.validators import (
     Email,
     EqualTo,
     ValidationError,
-    email_validator,
+    Optional,
+    URL,
 )
+from flask_wtf.file import FileField
 
 
 class LoginForm(FlaskForm):
@@ -52,3 +52,46 @@ class RegistrationForm(FlaskForm):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
             raise ValidationError("Please use a different username.")
+
+
+class AtLeastOneFileRequired:
+    def __init__(self, message=None):
+        if not message:
+            message = "At least one file is required"
+        self.message = message
+
+    def __call__(self, form, field):
+        other_field = form.file if field.name == "file_dz" else form.file_dz
+        if not field.data and not other_field.data:
+            raise ValidationError(self.message)
+
+
+class FileUploadForm(FlaskForm):
+    file = FileField("Select a file", validators=[Optional(), AtLeastOneFileRequired()])
+    file_dz = FileField(
+        "Select a file", validators=[Optional(), AtLeastOneFileRequired()]
+    )
+    details = StringField("Details", validators=[Length(max=200)])
+    private = BooleanField("Private")
+    submit = SubmitField("Upload")
+
+
+class GroupForm(FlaskForm):
+    name = StringField("Name", validators=[DataRequired(), Length(max=200)])
+    description = StringField("Description", validators=[Length(max=200)])
+    submit = SubmitField("Add")
+
+
+class BookmarkForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    href = URLField("URL", validators=[DataRequired(), URL()])
+    details = TextAreaField("Details (optional)")
+    group = StringField("Group", validators=[Length(max=200), DataRequired()])
+    private = BooleanField("Private")
+    submit = SubmitField("Add")
+
+
+class EditFileForm(FlaskForm):
+    details = StringField("Details", validators=[Length(max=200)])
+    private = BooleanField("Private")
+    submit = SubmitField("Save")

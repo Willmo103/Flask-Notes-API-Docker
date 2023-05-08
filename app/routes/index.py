@@ -6,7 +6,7 @@ from . import endpoint
 
 @endpoint.route("/")
 @endpoint.route("/index")
-def index() -> str | Response:
+def index_page() -> str | Response:
     if current_user.is_authenticated:
         user_id = current_user.id
     else:

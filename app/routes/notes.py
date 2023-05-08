@@ -5,9 +5,16 @@ from app.models import Note, User
 from app.forms import NoteForm
 from . import endpoint
 
+__all__ = [
+    "note",
+    "edit_note",
+    "delete_note",
+    "get_user_notes",
+    "search_notes",
+]
 
 @endpoint.route("/note/add", methods=["GET", "POST"])
-def note() -> str | Response:
+def add_note() -> str | Response:
     form = NoteForm()
     if form.validate_on_submit():
         note = Note(
@@ -18,7 +25,7 @@ def note() -> str | Response:
         )
         note.save()
         flash("Your note has been saved.")
-        return redirect(url_for("routes.index"))
+        return redirect(url_for("routes.index_page"))
     return render_template("note.html", title="New Note", form=form, user=current_user)
 
 
@@ -34,10 +41,10 @@ def edit_note(note_id) -> str | Response:
             note.private = form.private.data
             db.session.commit()
             flash("Your note has been updated.")
-            return redirect(url_for("routes.index"))
+            return redirect(url_for("routes.index_page"))
     else:
         flash("You do not have permission to edit this note.")
-        return redirect(url_for("routes.index"))
+        return redirect(url_for("routes.index_page"))
     return render_template("note.html", title="Edit Note", form=form, user=current_user)
 
 
@@ -49,7 +56,7 @@ def delete_note(note_id) -> Response:
         flash("Your note has been deleted.")
     else:
         flash("You do not have permission to delete this note.")
-    return redirect(url_for("routes.index"))
+    return redirect(url_for("routes.index_page"))
 
 
 @endpoint.route("/user/<int:user_id>/notes")
@@ -75,4 +82,4 @@ def search_notes() -> Response:
             notes=notes,
             title=f"Search Results for {search_term}",
         )
-    return redirect(url_for("routes.index"))
+    return redirect(url_for("routes.index_page"))

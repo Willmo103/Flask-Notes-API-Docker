@@ -4,6 +4,11 @@ from app.models import Bookmark
 from app.forms import BookmarkForm
 from . import endpoint
 
+__all__ = [
+    "create_bookmark",
+    "edit_bookmark",
+    "delete_bookmark",
+]
 
 @endpoint.route("/bookmark/add", methods=["GET", "POST"])
 def create_bookmark() -> Response:

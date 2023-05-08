@@ -8,18 +8,14 @@ from flask import (
     Response,
 )
 from flask_login import current_user, login_required
-from app import db
 from app.models import File, Upload, Download, User, Deletion
-from app.forms import FileUploadForm, EditFileForm
+from app.forms import FileUploadForm
 from werkzeug.utils import secure_filename as s_fn
 import os
 from datetime import datetime as dt
 from . import endpoint
 
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
-
-# Add the rest of the file-related routes from your original routes.py file here
-
 
 @endpoint.route("/file/upload", methods=["GET", "POST"])
 def upload_file() -> str | Response:
@@ -64,10 +60,10 @@ def upload_file() -> str | Response:
         new_upload.save()
 
         flash("File uploaded successfully")
-        return redirect(url_for("routes.index"))
+        return redirect(url_for("routes.index_page"))
 
     flash("File upload failed")
-    return redirect(url_for("routes.index"))
+    return redirect(url_for("routes.index_page"))
 
 
 @endpoint.route("/user/<int:user_id>/files")
@@ -96,7 +92,7 @@ def delete_file(file_id) -> Response:
             flash("Your file has been deleted.")
 
 
-@endpoint.route("/file/<int:file_id>/download", methods=["GET"])
+@endpoint.route("/file/<int:file_id>/download")
 def download_file(file_id) -> Response:
     file = File.query.get_or_404(file_id)
     if current_user.is_authenticated:

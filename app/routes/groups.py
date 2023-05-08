@@ -4,6 +4,11 @@ from app.models import Group
 from app.forms import GroupForm
 from . import endpoint
 
+__all__ = [
+    "create_group",
+    "edit_group",
+    "delete_group",
+]
 
 @endpoint.route("/group/add", methods=["GET", "POST"])
 def create_group() -> Response:

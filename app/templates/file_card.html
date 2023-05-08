@@ -12,7 +12,7 @@
                 <p>Details: {{ file.details }}</p>
                 {% endif %}
             </div>
-            <a href="{{ url_for('routes.download_file', file_id=file.id, user=user) }}" class="btn btn-warning"
+            <a href="{{ url_for('routes.download_file', file_id=file.id) }}" class="btn btn-warning"
                 id="downloadBtn">Download
                 File</a>
             {% if file.is_editable(user.id) %}
@@ -99,14 +99,14 @@
             modal.hide();
 
             // Redirect to index page
-            window.location.href = "{{ url_for('routes.index') }}";
+            window.location.href = "{{ url_for('routes.index_page') }}";
         });
     });
     // return the user to index page after the download is complete
     document.addEventListener("DOMContentLoaded", function () {
         const downloadButton = document.querySelector("#downloadBtn");
         downloadButton.addEventListener("click", function () {
-            window.location.href = "{{ url_for('routes.index') }}";
+            window.location.href = "{{ url_for('routes.index_page') }}";
         });
     });
 </script>

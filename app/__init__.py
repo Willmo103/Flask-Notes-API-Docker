@@ -73,11 +73,11 @@ def create_app():
     with app.app_context():
 
         # import the routes and models modules
-        from . import routes
+        from .routes import endpoint
         from . import models
 
         # register the blueprints
-        app.register_blueprint(routes.endpoint)
+        app.register_blueprint(endpoint)
 
         # Register the markdown filter with the app
         app.jinja_env.filters["markdown"] = markdown_filter

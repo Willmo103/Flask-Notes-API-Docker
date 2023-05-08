@@ -9,8 +9,8 @@ class Deletion(db.Model):
     file_deleted = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
     reason_deleted = db.Column(db.String(1000), nullable=True, default=None)
 
-    def __init__(user_id: int, file_id: int, reason: str = None) -> None:
-        User.get_user(user_id)
+    def __init__(self, user_id: int, file_id: int, reason: str = None) -> None:
+        user = User.get_user(user_id)
         if user.is_admin == False:
             raise Exception("User is not an admin")
         self.deletion_date = datetime.utcnow()

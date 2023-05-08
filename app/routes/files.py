@@ -47,8 +47,8 @@ def upload_file() -> str | Response:
 
         file_id = File.query.filter_by(file_name=secure_filename).first().id
         new_upload = Upload(
-            user_id=current_user.id,
-            file_id=file_id,
+            file_id,
+            current_user.id,
         )
 
     else:

@@ -86,7 +86,7 @@
     </main>
     <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel"
         aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="fileUploadModalLabel">Upload a File</h5>
@@ -97,20 +97,16 @@
                         id="fileUploadForm">
                         {{ upload_form.hidden_tag() }}
                         <div class="row">
-                            <div class="col-md-8">
-                                <div class="mb-3">
-                                    {{ upload_form.file.label(class="form-label") }}
-                                    {{ upload_form.file(class="form-control") }}
-                                </div>
-                                <div class="mb-3">
-                                    {{ upload_form.file_dz.label(class="form-label") }}
-                                    <div id="dropZone" class="border rounded p-2 dropzone">
-                                        {{ upload_form.file_dz() }}
-                                        Drag and drop a file here
-                                    </div>
+                            <div class="col-md-7 mb-3">
+                                {{ upload_form.file.label(class="form-label d-none d-md-block") }}
+                                {{ upload_form.file(class="form-control d-none d-md-block") }}
+                                {{ upload_form.file_dz.label(class="form-label") }}
+                                <div id="dropZone" class="border rounded p-2 dropzone">
+                                    {{ upload_form.file_dz() }}
+                                    Drag and drop a file here
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-5">
                                 <div class="mb-3">
                                     {{ upload_form.details.label(class="form-label") }}
                                     {{ upload_form.details(class="form-control") }}
@@ -122,12 +118,21 @@
                                 {% endif %}
                             </div>
                         </div>
-                        {{ upload_form.submit(class="btn btn-primary") }}
+                        <div class="text-end">
+                            {{ upload_form.submit(class="btn btn-primary") }}
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+    <style>
+        @media (min-width: 992px) {
+            #dropZone {
+                height: 200px;
+            }
+        }
+    </style>
     <!-- Add Bookmark Modal -->
     <div class="modal fade" id="addBookmarkOrGroupModal" tabindex="-1" aria-labelledby="addBookmarkModalLabel"
         aria-hidden="true">

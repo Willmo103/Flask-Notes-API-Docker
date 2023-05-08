@@ -21,7 +21,7 @@ class File(db.Model):
     file_type: str = db.Column(db.String(100), nullable=True, default=None)
     deleted: bool = db.Column(db.Boolean, nullable=False, default=False)
     date_deleted: datetime = db.Column(db.DateTime, nullable=True, default=None)
-    private: bool = db.Column(db.Boolean, nullable=False, default=True)
+    private: bool = db.Column(db.Boolean, nullable=False, default=False)
     details: str = db.Column(db.String(200), nullable=True, default=None)
 
     def __init__(
@@ -52,10 +52,8 @@ class File(db.Model):
 
     def save(self) -> int:
         db.session.add(self)
-        db.session.flush()  # Replaces db.session.commit().returning(File.id)
-        id = self.id
-        db.session.commit()  # Commit the transaction
-        return id
+        db.session.commit()
+
 
     def delete(self) -> bool:
         self.deleted = True
@@ -113,3 +111,8 @@ class File(db.Model):
     def get_admin_files(current_user) -> List | None:
         if current_user.is_admin():
             return File.query.all()
+
+    @classmethod
+    def init_with_id(cls, filename: str):
+        file = File(file_name=filename)
+        return file.save()

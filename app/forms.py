@@ -72,7 +72,7 @@ class FileUploadForm(FlaskForm):
         "Select a file", validators=[Optional(), AtLeastOneFileRequired()]
     )
     details = StringField("Details", validators=[Length(max=200)])
-    private = BooleanField("Private")
+    private = BooleanField("Private", default=False)
     submit = SubmitField("Upload")
 
 

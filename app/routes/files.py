@@ -21,36 +21,43 @@ _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 @endpoint.route("/file/upload", methods=["GET", "POST"])
 def upload_file() -> str | Response:
     form = FileUploadForm()
-    time_stamp = dt.utcnow().strftime("%Y%m%d%H%M%S")
     if form.file.data is None:
         uploaded_file = form.file_dz.data
     elif form.file_dz.data is None:
         uploaded_file = form.file.data
+    else:
+        flash("Failed to upload file")
+        return redirect(url_for("routes.index_page"))
 
     secure_filename = s_fn(uploaded_file.filename)
 
     if current_user.is_authenticated:
-        new_file = File(
-            secure_filename,
-            user_id=current_user.id,
-            private=form.private.data,
-            details=form.details.data,
-        )
-        file_id = new_file.save()
+        new_file_id = File.init_with_id(secure_filename)
+        print("New file id", new_file_id)
+        new_file: File = File.query.filter_by(file_name=secure_filename).first()
+        if new_file:
+            print("New file", new_file)
+            new_file.user_id = current_user.id,
+            new_file.private = form.private.data,
+            new_file.details = form.details.data,
+            print("New file", new_file)
+            new_file.save()
+        else:
+            raise Exception("Failed to create new file")
 
         new_upload = Upload(
-            file_id,
+            new_file.id,
             current_user.id,
         )
-        upload_id = new_upload.save()
+        print("New upload", new_upload)
+        saved = new_upload.save()
     else:
-        new_file = File(secure_filename)
-        new_upload = Upload(file_id=secure_filename, date_uploaded=time_stamp)
+        new_file = File.init_with_id(secure_filename)
+        new_upload = Upload(file_id=new_file.id)
+        saved = new_upload.save()
 
-    if file_id is not None and upload_id:
-        uploaded_file.save(os.path.join(_upload_folder, secure_filename))
-        new_upload.save()
-
+    if saved and new_file.id is not None:
+        upload_file.save(os.path.join(_upload_folder, secure_filename))
         flash("File uploaded successfully")
         return redirect(url_for("routes.index_page"))
 

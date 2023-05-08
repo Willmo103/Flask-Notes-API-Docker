@@ -28,6 +28,9 @@ class Deletion(db.Model):
         self.file_deleted = file_id
         self.reason_deleted = reason
 
+    def __repr__(self) -> str:
+        return f"Deletion('{self.deletion_date}', '{self.deleted_by}', '{self.file_deleted}', '{self.reason_deleted}')"
+
     def save(self) -> None:
         db.session.add(self)
         db.session.commit()

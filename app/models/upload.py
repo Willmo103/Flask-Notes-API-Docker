@@ -15,6 +15,9 @@ class Upload(db.Model):
         db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False
     )
 
+    def __repr__(self) -> str:
+        return f"Upload('{self.upload_date}', '{self.user_id}', '{self.file_id}')"
+
     def __init__(
         self,
         file_id: int,
@@ -25,7 +28,7 @@ class Upload(db.Model):
 
     def save(self) -> int:
         db.session.add(self)
-        db.session.commit()  # Commit the transaction
+        db.session.commit()
         return True
 
     @staticmethod

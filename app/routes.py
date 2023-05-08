@@ -24,6 +24,7 @@ from werkzeug.utils import secure_filename as s_fn
 import os
 from datetime import datetime as dt
 
+#TODO refactor this into a subpackage
 
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 endpoint = Blueprint("routes", __name__)

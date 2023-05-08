@@ -28,7 +28,7 @@ class File(db.Model):
         self,
         file_name: str,
         user_id: int = None,
-        date_posted: datetime = None,
+        date_posted: datetime = datetime.utcnow(),
         private: bool = False,
         details: str | None = None,
     ) -> None:
@@ -57,7 +57,6 @@ class File(db.Model):
         os.remove(os.path.join(_upload_folder, file.file_name))
         file.deleted = True
         file.date_deleted = datetime.utcnow()
-        db.session.update(file)
         db.session.commit()
 
     @staticmethod
@@ -78,21 +77,19 @@ class File(db.Model):
     @staticmethod
     def read_info_from_uploads_dir() -> None:
         for file in File.scan_folder():
+            print(file)
             file_data = File.query.filter_by(file_name=file).first()
             if file_data is not None:
                 if file_data.file_size is None:
                     file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
                 if file_data.file_type is None:
                     file_data.file_type = file.split(".")[-1]
-                db.session.update(file_data)
                 db.session.commit()
 
     @staticmethod
     def scan_folder() -> Generator[str, None, None]:
-        files = []
         for file in os.listdir(_upload_folder):
-            if file != ".gitkeep":
-                files.append(file)
+            print("File: ", file)
             yield file
 
     @staticmethod

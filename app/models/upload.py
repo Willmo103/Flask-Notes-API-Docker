@@ -3,7 +3,7 @@ from app import db
 
 
 class Upload(db.Model):
-    upload_date: datetime = db.Column(
+    upload_date = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
     user_id = db.Column(
@@ -19,9 +19,7 @@ class Upload(db.Model):
         self,
         file_id: int,
         user_id: int | None = None,
-        upload_date: datetime = datetime.utcnow,
     ) -> None:
-        self.upload_date = upload_date
         self.user_id = user_id
         self.file_id = file_id
 

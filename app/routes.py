@@ -42,7 +42,7 @@ def index() -> str | Response:
         user_id = None
     notes = Note.return_index_page_notes(user_id)
     files = File.return_index_page_files(user_id)
-
+    print(files)
     return render_template(
         "index.html",
         notes=notes,
@@ -64,33 +64,37 @@ def upload_file() -> str | Response:
     filename = uploaded_file.filename
     content_type = uploaded_file.content_type
     content_length = uploaded_file.content_length
+    secure_filename = s_fn(filename)
 
     print(filename)
     print(content_type)
     print(content_length)
+    print(secure_filename)
 
-    if uploaded_file:
-        secure_filename = s_fn(filename)
-        uploaded_file.save(os.path.join(_upload_folder, secure_filename))
+
     if current_user.is_authenticated:
         new_file = File(
             secure_filename,
             user_id=current_user.id,
-            date_posted=time_stamp,
             private=form.private.data,
             details=form.details.data,
         )
+        new_file.save()
+
+        file_id = File.query.filter_by(file_name=secure_filename).first().id
         new_upload = Upload(
             user_id=current_user.id,
-            file_id=secure_filename,
-            uplaod_date=time_stamp,
+            file_id=file_id,
         )
+
     else:
         new_file = File(secure_filename, date_posted=dt.utcnow())
         new_upload = Upload(file_id=secure_filename, date_uploaded=time_stamp)
 
+    if new_file and new_upload:
+        uploaded_file.save(os.path.join(_upload_folder, secure_filename))
+
     new_upload.save()
-    new_file.save()
 
     flash("File uploaded successfully")
     return redirect(url_for("routes.index"))
@@ -213,11 +217,11 @@ def search_notes() -> Response:
         )
     return redirect(url_for("routes.index"))
 
-@endpoint.routes("/user/files")
+@endpoint.route("/user/<int:user_id>/files")
 @login_required
 def get_user_files(user_id) -> Response:
     user = User.query.get_or_404(user_id)
-    files = user.get_files()
+    files = File.get_all_user_files(user_id)
     return render_template("index.html", files=files, user=user)
 
 @endpoint.route("/create_group", methods=["GET", "POST"])

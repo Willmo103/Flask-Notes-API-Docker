@@ -89,3 +89,9 @@ class BookmarkForm(FlaskForm):
     group = StringField("Group", validators=[Length(max=200), DataRequired()])
     private = BooleanField("Private")
     submit = SubmitField("Add")
+
+
+class EditFileForm(FlaskForm):
+    details = StringField("Details", validators=[Length(max=200)])
+    private = BooleanField("Private")
+    submit = SubmitField("Save")

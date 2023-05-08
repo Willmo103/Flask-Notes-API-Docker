@@ -41,6 +41,19 @@ class File(db.Model):
     def __repr__(self) -> str:
         return f"File('{self.file_name}', '{self.date_posted}')"
 
+    def is_owned_by_user(self, user_id: int) -> bool:
+        return self.user_id == user_id
+
+    def is_anonymous(self) -> bool:
+        return self.user_id is None
+
+    def is_private(self) -> bool:
+        return self.private
+
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
     @staticmethod
     def get_all_user_files(user_id) -> List | None:
         return File.query.filter_by(user_id=user_id).all()
@@ -82,17 +95,6 @@ class File(db.Model):
             all_files = File.query.all()
             # print("All files: ", all_files)
             if file_data is not None:
-                print(
-                    f"""
-call to database: {file_data}
-file name: {file_data.file_name}
-file size: {file_data.file_size}
-file type: {file_data.file_type}
-file date posted: {file_data.date_posted}
-file id: {file_data.id}
-file owner: {file_data.user_id}
-                      """
-                )
                 if file_data.file_size is None:
                     print("File size: ", file_data.file_size)
                     file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
@@ -111,16 +113,3 @@ file owner: {file_data.user_id}
     def get_admin_files(current_user) -> List | None:
         if current_user.is_admin():
             return File.query.all()
-
-    def is_owned_by_user(self, user_id: int) -> bool:
-        return self.user_id == user_id
-
-    def is_anonymous(self) -> bool:
-        return self.user_id is None
-
-    def is_private(self) -> bool:
-        return self.private
-
-    def save(self) -> None:
-        db.session.add(self)
-        db.session.commit()

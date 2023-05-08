@@ -6,6 +6,7 @@ from flask import (
     url_for,
     Blueprint,
     request,
+    send_from_directory,
 )
 from flask_login import current_user, login_user, logout_user, login_required
 from app import db
@@ -41,7 +42,7 @@ def index() -> str | Response:
         user_id = current_user.id
     else:
         user_id = None
-    notes = Note.return_index_page_notes(user_id)
+    notes = Note.index_page_notes(user_id)
     files = File.return_index_page_files(user_id)
     print("Files on index page", files)
     return render_template(
@@ -197,7 +198,8 @@ def get_user_notes(user_id) -> Response:
     return render_template("index.html", notes=notes, user=user)
 
 
-@endpoint.route("/search", methods=["GET", "POST"])
+# TODO this needs to be a total search
+@endpoint.route("/note/search", methods=["GET", "POST"])
 def search_notes() -> Response:
     if request.method == "POST":
         search_term = request.form["search_term"]
@@ -222,44 +224,45 @@ def get_user_files(user_id) -> Response:
     return render_template("index.html", files=files, user=user)
 
 
-@endpoint.route("/create_group", methods=["GET", "POST"])
+@endpoint.route("/group/add", methods=["GET", "POST"])
 def create_group() -> Response:
     # Implement group creation logic here
     pass
 
 
-@endpoint.route("/edit_group/<int:group_id>", methods=["GET", "POST"])
+@endpoint.route("/group/<int:group_id>/edit", methods=["GET", "POST"])
 def edit_group(group_id) -> Response:
     # Implement group editing logic here
     pass
 
 
-@endpoint.route("/delete_group/<int:group_id>", methods=["POST"])
+@endpoint.route("/group/<int:group_id>/delete", methods=["POST"])
 def delete_group(group_id) -> Response:
     # Implement group deletion logic here
     pass
 
 
-@endpoint.route("/create_bookmark", methods=["GET", "POST"])
+@endpoint.route("/bookmark/add", methods=["GET", "POST"])
 def create_bookmark() -> Response:
     # Implement bookmark creation logic here
     pass
 
 
-@endpoint.route("/edit_bookmark/<int:bookmark_id>", methods=["GET", "POST"])
+@endpoint.route("/bookmark/<int:bookmark_id>/edit", methods=["GET", "POST"])
 def edit_bookmark(bookmark_id) -> Response:
     # Implement bookmark editing logic here
     pass
 
 
-@endpoint.route("/delete_bookmark/<int:bookmark_id>", methods=["POST"])
+@endpoint.route("/bookmark/<int:bookmark_id>/delete", methods=["POST"])
 def delete_bookmark(bookmark_id) -> Response:
     # Implement bookmark deletion logic here
     pass
 
 
-@endpoint.route("/edit_file/<int:file_id>", methods=["GET", "POST"])
+@endpoint.route("/file/<int:file_id>/edit", methods=["GET", "POST"])
 def edit_file(file_id) -> Response:
+    file = File.query.get_or_404(file_id)
     pass
 
 
@@ -269,9 +272,8 @@ def delete_file(file_id) -> Response:
 
 
 @endpoint.route("/file/<int:file_id>/download")
+@login_required
 def download_file(file_id) -> Response:
     file = File.query.get_or_404(file_id)
-    download = Download(file_id=file_id, user_id=current_user.id)
-    return send_from_directory(
-        current_app.config["UPLOAD_FOLDER"], filename=file.filename
-    )
+    Download.record_download(file_id, current_user.id)
+    return send_from_directory(_upload_folder, file.file_name)

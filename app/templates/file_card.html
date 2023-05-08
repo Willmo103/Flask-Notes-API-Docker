@@ -8,7 +8,6 @@
             <h5 class="card-title">{{ file.file_name }}</h5>
             <div class="card-text">
                 <p>Size: {{ file.file_size }}</p>
-                <p>Type: {{ file.file_type }}</p>
                 {% if file.details %}
                 <p>Details: {{ file.details }}</p>
                 {% endif %}
@@ -34,9 +33,8 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 <a href="{{ url_for('routes.download_file', file_id=file.id, user=user) }}"
-                    class="btn btn-warning">Edit</a>
-                <a href="{{ url_for('routes.delete_file', file_id=file.id, user=user ) }}"
-                    class="btn btn-danger">Delete</a>
+                    class="btn btn-warning">Download File</a>
+                <a href="{{ url_for('routes.delete_file', file_id=file.id) }}" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>

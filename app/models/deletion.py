@@ -5,8 +5,8 @@ from app.models.user import User
 
 class Deletion(db.Model):
     deletion_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    deleted_by = db.Column(db.Integer, db.ForeignKey("user.id"), primary_key=True)
-    file_deleted = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+    deleted_by = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="NO ACTION"), primary_key=True, nullable=False)
+    file_deleted = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), primary_key=True, nullable=False)
     reason_deleted = db.Column(db.String(1000), nullable=True, default=None)
 
     def __init__(self, user_id: int, file_id: int, reason: str = None) -> None:

@@ -9,7 +9,7 @@ from flask import (
 )
 from flask_login import current_user, login_required
 from app.models import File, Upload, Download, User, Deletion
-from app.forms import FileUploadForm, EditFileForm
+from app.forms import DeleteFileForm, FileUploadForm, EditFileForm
 from werkzeug.utils import secure_filename as s_fn
 import os
 from datetime import datetime as dt
@@ -27,15 +27,7 @@ def upload_file() -> str | Response:
     elif form.file_dz.data is None:
         uploaded_file = form.file.data
 
-    filename = uploaded_file.filename
-    content_type = uploaded_file.content_type
-    content_length = uploaded_file.content_length
-    secure_filename = s_fn(filename)
-
-    print(filename)
-    print(content_type)
-    print(content_length)
-    print(secure_filename)
+    secure_filename = s_fn(uploaded_file.filename)
 
     if current_user.is_authenticated:
         new_file = File(
@@ -55,7 +47,7 @@ def upload_file() -> str | Response:
         new_file = File(secure_filename)
         new_upload = Upload(file_id=secure_filename, date_uploaded=time_stamp)
 
-    if file_id and upload_id:
+    if file_id is not None and upload_id:
         uploaded_file.save(os.path.join(_upload_folder, secure_filename))
         new_upload.save()
 
@@ -99,13 +91,27 @@ def edit_file(file_id) -> Response:
 @endpoint.route("/file/<int:file_id>/delete", methods=["GET", "DELETE"])
 @login_required
 def delete_file(file_id) -> Response:
-    if request.method == "GET":
-        file: File = File.query.get_or_404(file_id)
-        user = User.query.get_or_404(current_user.id)
-        if user.is_admin() or file.is_owned_by_user(user.id):
-            Deletion(file_id, user.id).save()
-            file.delete()
+    file: File = File.query.get_or_404(file_id)
+    form = DeleteFileForm()
+    if request.method == "GET" and current_user.is_admin():
+        return render_template(
+            "delete_file.html",
+            title="Delete File",
+            form=form,
+            user=current_user,
+            file=file,
+        )
+    elif request.method == "DELETE":
+        if form.validate_on_submit() and form.confirm.data and current_user.is_admin():
+            deleted = file.delete()
+            if deleted:
+                flash("Your file has been deleted.")
+                Deletion(file_id, current_user.id).save()
             flash("Your file has been deleted.")
+            return redirect(url_for("routes.index_page"))
+    else:
+        flash("You do not have permission to delete this file.")
+    return redirect(url_for("routes.index_page"))
 
 
 @endpoint.route("/file/<int:file_id>/download")

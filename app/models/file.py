@@ -57,12 +57,10 @@ class File(db.Model):
         db.session.commit()  # Commit the transaction
         return id
 
-    def delete(self, user_id: int, admin: bool = False) -> bool:
-        if self.is_owned_by_user(user_id) or admin:
-            db.session.delete(self)
-            db.session.commit()
-            return True
-        return False
+    def delete(self) -> bool:
+        self.deleted = True
+        db.session.commit()
+        return True
 
     def is_editable(self, user_id: int) -> bool:
         return self.is_owned_by_user(user_id)
@@ -70,20 +68,6 @@ class File(db.Model):
     @staticmethod
     def get_all_user_files(user_id) -> List | None:
         return File.query.filter_by(user_id=user_id).all()
-
-    @staticmethod
-    def delete_file(file_id: int, user) -> None:
-        file: File = File.query.filter_by(id=file_id).first()
-        if file:
-            file: File = File.query.filter(
-                and_(File.id == file_id, File.user_id == user.id)
-            ).first()
-        else:
-            file: File = File.query.filter_by(id=file_id).first()
-        os.remove(os.path.join(_upload_folder, file.file_name))
-        file.deleted = True
-        file.date_deleted = datetime.utcnow()
-        db.session.commit()
 
     @staticmethod
     def return_index_page_files(user_id: int) -> List | None:

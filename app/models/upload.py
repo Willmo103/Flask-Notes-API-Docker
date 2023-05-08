@@ -8,12 +8,11 @@ class Upload(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id"),
-        primary_key=True,
         nullable=True,
         default=None,
     )
     file_id = db.Column(
-        db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), primary_key=True
+        db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False
     )
 
     def __init__(
@@ -26,10 +25,8 @@ class Upload(db.Model):
 
     def save(self) -> int:
         db.session.add(self)
-        db.session.flush()  # Replaces db.session.commit().returning(File.id)
-        id = self.id
         db.session.commit()  # Commit the transaction
-        return id
+        return True
 
     @staticmethod
     def record_upload(user_id: int, file_id: int) -> None:

@@ -95,3 +95,10 @@ class EditFileForm(FlaskForm):
     details = StringField("Details", validators=[Length(max=200)])
     private = BooleanField("Private")
     submit = SubmitField("Save")
+
+
+class DeleteFileForm(FlaskForm):
+    reason = StringField(
+        "Reason", validators=[Length(max=200)], default="No reason given"
+    )
+    submit = SubmitField("Delete")

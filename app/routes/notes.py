@@ -13,6 +13,7 @@ __all__ = [
     "search_notes",
 ]
 
+
 @endpoint.route("/note/add", methods=["GET", "POST"])
 def add_note() -> str | Response:
     form = NoteForm()

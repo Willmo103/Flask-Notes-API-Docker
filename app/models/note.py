@@ -12,7 +12,10 @@ class Note(db.Model):
         db.DateTime, nullable=False, default=datetime.utcnow
     )
     user_id = db.Column(
-        db.Integer, db.ForeignKey("user.id", ondelete="NO ACTION"), nullable=True, default=None
+        db.Integer,
+        db.ForeignKey("user.id", ondelete="NO ACTION"),
+        nullable=True,
+        default=None,
     )
     private: bool = db.Column(db.Boolean, nullable=False, default=True)
 

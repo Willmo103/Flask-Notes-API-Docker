@@ -13,7 +13,9 @@ class Download(db.Model):
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False)
+    file_id = db.Column(
+        db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False
+    )
 
     def __init__(
         self,

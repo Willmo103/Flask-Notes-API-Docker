@@ -10,6 +10,7 @@ __all__ = [
     "register",
 ]
 
+
 @endpoint.route("/login", methods=["GET", "POST"])
 def login() -> str | Response:
     if current_user.is_authenticated:

@@ -50,9 +50,19 @@ class File(db.Model):
     def is_private(self) -> bool:
         return self.private
 
-    def save(self) -> None:
+    def save(self) -> int:
         db.session.add(self)
-        db.session.commit()
+        db.session.flush()  # Replaces db.session.commit().returning(File.id)
+        id = self.id
+        db.session.commit()  # Commit the transaction
+        return id
+
+    def delete(self, user_id: int, admin: bool = False) -> bool:
+        if self.is_owned_by_user(user_id) or admin:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        return False
 
     def is_editable(self, user_id: int) -> bool:
         return self.is_owned_by_user(user_id)
@@ -80,30 +90,33 @@ class File(db.Model):
         File.read_info_from_uploads_dir()
         if user_id is not None:
             return File.query.filter(
-                or_(
-                    File.user_id == user_id,
-                    File.user_id.is_(None),
-                    File.private.is_(False),
+                and_(
+                    or_(
+                        File.user_id == user_id,
+                        File.user_id.is_(None),
+                        File.private.is_(False),
+                    ),
+                    File.deleted.is_(False),
                 )
             ).all()
         return File.query.filter(
-            or_(File.user_id.is_(None), File.private.is_(False))
+            and_(
+                or_(File.user_id.is_(None), File.private.is_(False)),
+                File.deleted.is_(False),
+            )
         ).all()
 
     @staticmethod
     def read_info_from_uploads_dir() -> None:
         for file in File.scan_folder():
-            # print("Read info from files call: ", file)
             file_data = File.query.filter_by(file_name=file).first()
-            all_files = File.query.all()
-            # print("All files: ", all_files)
             if file_data is not None:
                 if file_data.file_size is None:
-                    print("File size: ", file_data.file_size)
                     file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
+                    print("File size: ", file_data.file_size)
                 if file_data.file_type is None:
-                    print("File type: ", file_data.file_type)
                     file_data.file_type = file.split(".")[-1]
+                    print("File type: ", file_data.file_type)
                 db.session.commit()
 
     @staticmethod

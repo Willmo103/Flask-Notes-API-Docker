@@ -36,16 +36,14 @@
                 <div id="filePreview{{ file.id }}">
                     <div class="row">
                         <div class="col-ps-1">
-
                             <h6>Details:</h6>
-                            <p>Preview will be available later.</p>
                             <p>Size: {{ file.file_size }}</p>
                             {% if file.details %}
                             <p>Details: {{ file.details }}</p>
                             {% else %}
                             <p>Details: No details provided.</p>
                             {% endif %}
-                            <p>Uploaded on: {{ file.uploaded_on }}</p>
+                            <p>Uploaded on: {{ file.date_posted }}</p>
                         </div>
                     </div>
                 </div>

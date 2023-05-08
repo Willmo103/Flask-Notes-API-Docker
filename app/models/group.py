@@ -7,7 +7,9 @@ class Group(db.Model):
     id: int = db.Column(db.Integer, primary_key=True)
     name: str = db.Column(db.String(100), nullable=False)
     private: bool = db.Column(db.Boolean, nullable=False, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
     bookmarks = db.relationship("Bookmark", backref="group", lazy=True)
 
     def __init__(self, name: str, private: bool, user_id: int) -> None:

@@ -54,6 +54,9 @@ class File(db.Model):
         db.session.add(self)
         db.session.commit()
 
+    def is_editable(self, user_id: int) -> bool:
+        return self.is_owned_by_user(user_id)
+
     @staticmethod
     def get_all_user_files(user_id) -> List | None:
         return File.query.filter_by(user_id=user_id).all()

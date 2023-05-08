@@ -18,6 +18,7 @@ from app.forms import (
     NoteForm,
     FileUploadForm,
     BookmarkForm,
+    EditFileForm,
 )
 from werkzeug.utils import secure_filename as s_fn
 import os
@@ -32,7 +33,8 @@ endpoint = Blueprint("routes", __name__)
 def inject_forms() -> dict:
     upload_form: FlaskForm = FileUploadForm()
     bookmark_form: FlaskForm = BookmarkForm()
-    return dict(upload_form=upload_form, bookmark_form=bookmark_form)
+    edit_file_form: FlaskForm = EditFileForm()
+    return dict(upload_form=upload_form, bookmark_form=bookmark_form, edit_file_form=edit_file_form)
 
 
 @endpoint.route("/")
@@ -266,14 +268,21 @@ def edit_file(file_id) -> Response:
     pass
 
 
-@endpoint.route("/delete_file/<int:file_id>", methods=["POST"])
+@endpoint.route("/delete_file/<int:file_id>", methods=["DELETE"])
 def delete_file(file_id) -> Response:
     pass
 
 
-@endpoint.route("/file/<int:file_id>/download")
-@login_required
+@endpoint.route("/file/<int:file_id>/download", methods=["GET"])
 def download_file(file_id) -> Response:
     file = File.query.get_or_404(file_id)
-    Download.record_download(file_id, current_user.id)
-    return send_from_directory(_upload_folder, file.file_name)
+    if current_user.is_authenticated:
+        if not file.is_private() or file.is_owned_by_user(current_user.id):
+            Download.record_download(file_id, current_user.id)
+            return send_from_directory(_upload_folder, file.file_name)
+    elif not file.is_private() or file.is_anonymous():
+        Download.record_download(file_id)
+        return send_from_directory(_upload_folder, file.file_name)
+    else:
+        flash("You do not have permission to download this file.")
+        return redirect(url_for("routes.login"))

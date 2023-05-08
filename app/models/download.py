@@ -9,7 +9,6 @@ class Download(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id"),
-        primary_key=True,
         nullable=True,
         default=None,
     )
@@ -30,10 +29,10 @@ class Download(db.Model):
         db.session.commit()
 
     @classmethod
-    def record_download(cls, file_id, user_id):
+    def record_download(cls, file_id, user_id=None):
         download = cls(
             file_id=file_id,
-            user_id=user_id,  # Set user_id field here
+            user_id=user_id,
             download_date=datetime.utcnow(),
         )
         db.session.add(download)

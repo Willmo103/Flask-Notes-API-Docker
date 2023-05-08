@@ -12,8 +12,13 @@
                 <p>Details: {{ file.details }}</p>
                 {% endif %}
             </div>
+            <a href="{{ url_for('routes.download_file', file_id=file.id, user=user) }}" class="btn btn-warning"
+                id="downloadBtn">Download
+                File</a>
+            {% if file.is_editable(user.id) %}
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                data-bs-target="#fileModal{{ file.id }}">Preview</button>
+                data-bs-target="#fileModal{{ file.id }}">More Options</button>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -28,14 +33,80 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <p>Preview will be available later.</p>
+                <div id="filePreview{{ file.id }}">
+                    <div class="row">
+                        <div class="col-ps-1">
+
+                            <h6>Details:</h6>
+                            <p>Preview will be available later.</p>
+                            <p>Size: {{ file.file_size }}</p>
+                            {% if file.details %}
+                            <p>Details: {{ file.details }}</p>
+                            {% else %}
+                            <p>Details: No details provided.</p>
+                            {% endif %}
+                            <p>Uploaded on: {{ file.uploaded_on }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="fileEditForm{{ file.id }}" style="display:none;">
+                    <form action="{{ url_for('routes.edit_file', file_id=file.id) }}" method="post">
+                        {{ edit_file_form.csrf_token }}
+                        <div class="mb-3">
+                            {{ edit_file_form.details.label }} {{ edit_file_form.details(class="form-control") }}
+                        </div>
+                        <div class="mb-3 form-check">
+                            {{ edit_file_form.private.label(class="form-check-label") }} {{
+                            edit_file_form.private(class="form-check-input") }}
+                        </div>
+                        {{ edit_file_form.submit(class="btn btn-primary") }}
+                    </form>
+                </div>
             </div>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a href="{{ url_for('routes.download_file', file_id=file.id, user=user) }}"
-                    class="btn btn-warning">Download File</a>
+                <button type="button" class="btn btn-primary" id="editButton{{ file.id }}"
+                    onclick="toggleEditForm('{{ file.id }}')">Edit</button>
                 <a href="{{ url_for('routes.delete_file', file_id=file.id) }}" class="btn btn-danger">Delete</a>
             </div>
         </div>
     </div>
 </div>
+<script>
+    function toggleEditForm(fileId) {
+        const preview = document.getElementById("filePreview" + fileId);
+        const editForm = document.getElementById("fileEditForm" + fileId);
+        const editButton = document.getElementById("editButton" + fileId);
+
+        if (editForm.style.display === "none") {
+            editForm.style.display = "block";
+            preview.style.display = "none";
+            editButton.innerText = "Preview";
+        } else {
+            editForm.style.display = "none";
+            preview.style.display = "block";
+            editButton.innerText = "Edit";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const form = document.querySelector("#fileModal{{ file.id }} form");
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+            // Close the modal after form submission
+            const modal = bootstrap.Modal.getInstance(document.getElementById("fileModal{{ file.id }}"));
+            modal.hide();
+
+            // Redirect to index page
+            window.location.href = "{{ url_for('routes.index') }}";
+        });
+    });
+    // return the user to index page after the download is complete
+    document.addEventListener("DOMContentLoaded", function () {
+        const downloadButton = document.querySelector("#downloadBtn");
+        downloadButton.addEventListener("click", function () {
+            window.location.href = "{{ url_for('routes.index') }}";
+        });
+    });
+</script>

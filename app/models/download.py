@@ -3,6 +3,7 @@ from app import db
 
 
 class Download(db.Model):
+    id: int = db.Column(db.Integer, primary_key=True)
     download_date: datetime = db.Column(
         db.DateTime, nullable=False, default=datetime.utcnow
     )
@@ -12,7 +13,7 @@ class Download(db.Model):
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+    file_id = db.Column(db.Integer, db.ForeignKey("file.id"))
 
     def __init__(
         self,

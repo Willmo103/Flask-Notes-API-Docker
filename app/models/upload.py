@@ -3,6 +3,7 @@ from app import db
 
 
 class Upload(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
     upload_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(
         db.Integer,

@@ -9,11 +9,11 @@ class Download(db.Model):
     )
     user_id = db.Column(
         db.Integer,
-        db.ForeignKey("user.id"),
+        db.ForeignKey("user.id", ondelete="SET NULL"),
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id"))
+    file_id = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False)
 
     def __init__(
         self,

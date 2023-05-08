@@ -5,3 +5,4 @@ from .download import Download as Download
 from .upload import Upload as Upload
 from .bookmark import Bookmark as Bookmark
 from .group import Group as Group
+from .deletion import Deletion as Deletion

@@ -12,7 +12,7 @@ class Upload(db.Model):
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id"), primary_key=True)
+    file_id = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), primary_key=True)
 
     def __init__(
         self,

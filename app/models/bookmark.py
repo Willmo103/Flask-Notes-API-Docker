@@ -11,8 +11,9 @@ class Bookmark(db.Model):
     href: str = db.Column(db.Text, nullable=False)
     details: str = db.Column(db.String(100), nullable=True, default=None)
     private: bool = db.Column(db.Boolean, nullable=False, default=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
-    group_id = db.Column(db.Integer, db.ForeignKey("group.id"), nullable=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id",  ondelete="SET NULL"), nullable=True)
+    group_id = db.Column(db.Integer, db.ForeignKey("group.id", ondelete="No ACTION"), nullable=True)
+
 
     def __init__(
         self,

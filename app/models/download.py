@@ -19,9 +19,8 @@ class Download(db.Model):
         self,
         file_id: int,
         user_id: int | None = None,
-        download_date: datetime = datetime.utcnow,
     ) -> None:
-        self.download_date = download_date
+        self.download_date = datetime.utcnow()
         self.user = user_id
         self.file = file_id
 
@@ -30,7 +29,7 @@ class Download(db.Model):
         db.session.commit()
 
     @staticmethod
-    def record_download(file: id, user: id, time: datetime) -> None:
+    def record_download(file: id, user: id) -> None:
         dl: Download = Download(user, file, time)
         db.session.add(dl)
         db.session.commit()

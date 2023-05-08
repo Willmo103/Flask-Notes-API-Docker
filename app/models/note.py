@@ -16,6 +16,13 @@ class Note(db.Model):
     )
     private: bool = db.Column(db.Boolean, nullable=False, default=True)
 
+    def delete(self, user_id: int, admin: bool = False) -> bool:
+        if self.is_owned_by_user(user_id) or admin:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        return False
+
     def is_anonymous(self) -> bool:
         return self.user_id is None
 
@@ -28,7 +35,6 @@ class Note(db.Model):
     def save(self) -> None:
         db.session.add(self)
         db.session.commit()
-
 
     def __repr__(self) -> str:
         return f"Note('{self.title}', '{self.date_posted}')"
@@ -50,7 +56,6 @@ class Note(db.Model):
             ).all()
 
         return notes
-
 
     @staticmethod
     def return_index_page_notes(user_id: int | None) -> List | None:

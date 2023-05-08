@@ -22,6 +22,7 @@ from werkzeug.utils import secure_filename as s_fn
 import os
 from datetime import datetime as dt
 
+
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 endpoint = Blueprint("routes", __name__)
 
@@ -42,7 +43,7 @@ def index() -> str | Response:
         user_id = None
     notes = Note.return_index_page_notes(user_id)
     files = File.return_index_page_files(user_id)
-    print(files)
+    print("Files on index page", files)
     return render_template(
         "index.html",
         notes=notes,
@@ -70,7 +71,6 @@ def upload_file() -> str | Response:
     print(content_type)
     print(content_length)
     print(secure_filename)
-
 
     if current_user.is_authenticated:
         new_file = File(
@@ -135,8 +135,7 @@ def register() -> str | Response:
         first_admin = User.query.filter_by(is_admin=True).first()
         if not first_admin:
             user.is_admin = True
-        db.session.add(user)
-        db.session.commit()
+        user.save()
         flash(f"New user {form.username.data} has been created!")
         if User.query.count() == 1:
             flash("You are the first user, so you are an admin.")
@@ -154,8 +153,7 @@ def note() -> str | Response:
             author=current_user if current_user.is_authenticated else None,
             private=form.private.data,
         )
-        db.session.add(note)
-        db.session.commit()
+        note.save()
         flash("Your note has been saved.")
         return redirect(url_for("routes.index"))
     return render_template("note.html", title="New Note", form=form, user=current_user)
@@ -184,9 +182,7 @@ def edit_note(note_id) -> str | Response:
 @login_required
 def delete_note(note_id) -> Response:
     note = Note.query.get_or_404(note_id)
-    if note.is_owned_by_user(current_user.id) or current_user.is_admin:
-        db.session.delete(note)
-        db.session.commit()
+    if note.delete(current_user.id, current_user.is_admin()):
         flash("Your note has been deleted.")
     else:
         flash("You do not have permission to delete this note.")
@@ -217,12 +213,14 @@ def search_notes() -> Response:
         )
     return redirect(url_for("routes.index"))
 
+
 @endpoint.route("/user/<int:user_id>/files")
 @login_required
 def get_user_files(user_id) -> Response:
     user = User.query.get_or_404(user_id)
     files = File.get_all_user_files(user_id)
     return render_template("index.html", files=files, user=user)
+
 
 @endpoint.route("/create_group", methods=["GET", "POST"])
 def create_group() -> Response:
@@ -258,3 +256,22 @@ def edit_bookmark(bookmark_id) -> Response:
 def delete_bookmark(bookmark_id) -> Response:
     # Implement bookmark deletion logic here
     pass
+
+
+@endpoint.route("/edit_file/<int:file_id>", methods=["GET", "POST"])
+def edit_file(file_id) -> Response:
+    pass
+
+
+@endpoint.route("/delete_file/<int:file_id>", methods=["POST"])
+def delete_file(file_id) -> Response:
+    pass
+
+
+@endpoint.route("/file/<int:file_id>/download")
+def download_file(file_id) -> Response:
+    file = File.query.get_or_404(file_id)
+    download = Download(file_id=file_id, user_id=current_user.id)
+    return send_from_directory(
+        current_app.config["UPLOAD_FOLDER"], filename=file.filename
+    )

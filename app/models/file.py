@@ -43,7 +43,7 @@ class File(db.Model):
 
     @staticmethod
     def get_all_user_files(user_id) -> List | None:
-            return File.query.filter_by(user_id=user_id).all()
+        return File.query.filter_by(user_id=user_id).all()
 
     @staticmethod
     def delete_file(file_id: int, user) -> None:
@@ -77,12 +77,27 @@ class File(db.Model):
     @staticmethod
     def read_info_from_uploads_dir() -> None:
         for file in File.scan_folder():
-            print(file)
+            # print("Read info from files call: ", file)
             file_data = File.query.filter_by(file_name=file).first()
+            all_files = File.query.all()
+            # print("All files: ", all_files)
             if file_data is not None:
+                print(
+                    f"""
+call to database: {file_data}
+file name: {file_data.file_name}
+file size: {file_data.file_size}
+file type: {file_data.file_type}
+file date posted: {file_data.date_posted}
+file id: {file_data.id}
+file owner: {file_data.user_id}
+                      """
+                )
                 if file_data.file_size is None:
+                    print("File size: ", file_data.file_size)
                     file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
                 if file_data.file_type is None:
+                    print("File type: ", file_data.file_type)
                     file_data.file_type = file.split(".")[-1]
                 db.session.commit()
 

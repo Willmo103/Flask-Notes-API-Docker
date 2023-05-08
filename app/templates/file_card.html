@@ -1,12 +1,18 @@
 <!-- file_card.html -->
-<div class="col-md-4">
+<div class="row-md-4">
     <div class="card my-3">
         <div class="card-body">
             {% if file.private %}
             <span class="badge bg-secondary">Private</span>
             {% endif %}
-            <h5 class="card-title">{{ file.filename }}</h5>
-            <p class="card-text">File size: {{ file.size }} KB</p>
+            <h5 class="card-title">{{ file.file_name }}</h5>
+            <div class="card-text">
+                <p>Size: {{ file.file_size }}</p>
+                <p>Type: {{ file.file_type }}</p>
+                {% if file.details %}
+                <p>Details: {{ file.details }}</p>
+                {% endif %}
+            </div>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                 data-bs-target="#fileModal{{ file.id }}">Preview</button>
         </div>
@@ -19,7 +25,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="fileModalLabel{{ file.id }}">{{ file.filename }}</h5>
+                <h5 class="modal-title" id="fileModalLabel{{ file.id }}">{{ file.file_name }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -27,3 +33,11 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="{{ url_for('routes.download_file', file_id=file.id, user=user) }}"
+                    class="btn btn-warning">Edit</a>
+                <a href="{{ url_for('routes.delete_file', file_id=file.id, user=user ) }}"
+                    class="btn btn-danger">Delete</a>
+            </div>
+        </div>
+    </div>
+</div>

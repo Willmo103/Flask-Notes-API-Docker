@@ -1,6 +1,8 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from app import db, login_manager
+from app.models.note import Note
+from app.models.file import File
 
 
 @login_manager.user_loader
@@ -32,3 +34,20 @@ class User(UserMixin, db.Model):
 
     def __repr__(self) -> str:
         return f"User('{self.username}')"
+
+    def get_notes(self):
+        return Note.query.filter_by(user_id=self.id).all()
+
+    def get_files(self):
+        return File.query.filter_by(user_id=self.id).all()
+
+    def save(self) -> None:
+        db.session.add(self)
+        db.session.commit()
+
+    @staticmethod
+    def get_user(user_id: int):
+        user: User = User.query.filter_by(id=user_id).first()
+        if user is None:
+            raise Exception("User not found")
+        return user

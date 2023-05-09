@@ -96,7 +96,9 @@ class File(db.Model):
             file_data = File.query.filter_by(file_name=file).first()
             if file_data is not None:
                 if file_data.file_size is None:
-                    file_size_bytes = os.path.getsize(os.path.join(_upload_folder, file))
+                    file_size_bytes = os.path.getsize(
+                        os.path.join(_upload_folder, file)
+                    )
                     file_size_kb = file_size_bytes / 1024
                     file_size_mb = file_size_kb / 1024
                     file_size_gb = file_size_mb / 1024

@@ -7,8 +7,8 @@
             {% endif %}
             <h5 class="card-title">{{ note.title }}</h5>
             <p class="card-text">{{ note.content | markdown | striptags | truncate(100, True) }}</p>
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                data-bs-target="#noteModal{{ note.id }}">Read More</button>
+            <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                data-bs-target="#noteModal{{ note.id }}">More</button>
         </div>
     </div>
 </div>

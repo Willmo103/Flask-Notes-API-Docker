@@ -119,16 +119,35 @@ def delete_file(file_id) -> Response:
     return redirect(url_for("routes.index_page"))
 
 
+from flask import Response, make_response
+
+
 @endpoint.route("/file/<int:file_id>/download")
 def download_file(file_id) -> Response:
     file = File.query.get_or_404(file_id)
     if current_user.is_authenticated:
         if not file.is_private() or file.is_owned_by_user(current_user.id):
             Download.record_download(file_id, current_user.id)
-            return send_from_directory(_upload_folder, file.file_name)
+            # setting the content headers so that the browser knows to download the file
+            response = make_response(
+                send_from_directory(_upload_folder, file.file_name, as_attachment=True)
+            )
+            response.headers[
+                "Content-Disposition"
+            ] = f"attachment; filename={file.file_name}"
+            response.headers["Content-Type"] = "application/octet-stream"
+            return response
     elif not file.is_private() or file.is_anonymous():
         Download.record_download(file_id)
-        return send_from_directory(_upload_folder, file.file_name)
+        # setting the content headers so that the browser knows to download the file
+        response = make_response(
+            send_from_directory(_upload_folder, file.file_name, as_attachment=True)
+        )
+        response.headers[
+            "Content-Disposition"
+        ] = f"attachment; filename={file.file_name}"
+        response.headers["Content-Type"] = "application/octet-stream"
+        return response
     else:
         flash("You do not have permission to download this file.")
         return redirect(url_for("routes.login"))

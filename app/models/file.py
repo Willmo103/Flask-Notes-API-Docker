@@ -54,7 +54,6 @@ class File(db.Model):
         db.session.add(self)
         db.session.commit()
 
-
     def delete(self):
         try:
             os.remove(os.path.join(_upload_folder, self.file_name))
@@ -97,15 +96,20 @@ class File(db.Model):
             file_data = File.query.filter_by(file_name=file).first()
             if file_data is not None:
                 if file_data.file_size is None:
-                    if os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1:
-                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))} B"
-                    elif os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1000:
-                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} KB"
-                    elif os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1000000:
-                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000000:.2f} MB"
+                    file_size_bytes = os.path.getsize(os.path.join(_upload_folder, file))
+                    file_size_kb = file_size_bytes / 1024
+                    file_size_mb = file_size_kb / 1024
+                    file_size_gb = file_size_mb / 1024
+
+                    if file_size_bytes < 1024:
+                        file_data.file_size = f"{file_size_bytes} B"
+                    elif file_size_kb < 1024:
+                        file_data.file_size = f"{file_size_kb:.2f} KB"
+                    elif file_size_mb < 1024:
+                        file_data.file_size = f"{file_size_mb:.2f} MB"
                     else:
-                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000000000:.2f} GB"
-                    file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} KB"
+                        file_data.file_size = f"{file_size_gb:.2f} GB"
+
                 if file_data.file_type is None:
                     file_data.file_type = file.split(".")[-1]
                 db.session.commit()

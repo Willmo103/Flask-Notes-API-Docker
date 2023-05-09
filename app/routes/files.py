@@ -37,9 +37,9 @@ def upload_file() -> str | Response:
         new_file: File = File.query.filter_by(file_name=secure_filename).first()
         if new_file:
             print("New file", new_file)
-            new_file.user_id = current_user.id,
-            new_file.private = form.private.data,
-            new_file.details = form.details.data,
+            new_file.user_id = current_user.id
+            new_file.private = form.private.data
+            new_file.details = form.details.data
             print("New file", new_file)
             new_file.save()
         else:
@@ -57,7 +57,7 @@ def upload_file() -> str | Response:
         saved = new_upload.save()
 
     if saved and new_file.id is not None:
-        upload_file.save(os.path.join(_upload_folder, secure_filename))
+        uploaded_file.save(os.path.join(_upload_folder, secure_filename))
         flash("File uploaded successfully")
         return redirect(url_for("routes.index_page"))
 
@@ -95,27 +95,25 @@ def edit_file(file_id) -> Response:
             return redirect(url_for("routes.index_page"))
 
 
-@endpoint.route("/file/<int:file_id>/delete", methods=["GET", "DELETE"])
+@endpoint.route("/file/<int:file_id>/delete", methods=["GET", "POST"])
 @login_required
 def delete_file(file_id) -> Response:
     file: File = File.query.get_or_404(file_id)
     form = DeleteFileForm()
-    if request.method == "GET" and current_user.is_admin():
-        return render_template(
-            "delete_file.html",
-            title="Delete File",
-            form=form,
-            user=current_user,
-            file=file,
-        )
-    elif request.method == "DELETE":
-        if form.validate_on_submit() and form.confirm.data and current_user.is_admin():
-            deleted = file.delete()
-            if deleted:
-                flash("Your file has been deleted.")
-                Deletion(file_id, current_user.id).save()
-            flash("Your file has been deleted.")
-            return redirect(url_for("routes.index_page"))
+    user = User.query.get_or_404(current_user.id)
+    if user.is_admin():
+        if request.method == "GET":
+            return render_template(
+                "delete_file.html",
+                title="Delete File",
+                form=form,
+                file=file,
+            )
+        if form.validate_on_submit():
+            file.delete()
+            Deletion(file_id, current_user.id).save()
+        flash("Your file has been deleted.")
+        return redirect(url_for("routes.index_page"))
     else:
         flash("You do not have permission to delete this file.")
     return redirect(url_for("routes.index_page"))

@@ -14,7 +14,7 @@
         </div>
     </div>
 
-    <form method="DELETE">
+    <form method="POST" action="{{ url_for('routes.delete_file', file_id=file.id)}}">
         {{ form.hidden_tag() }}
         <div class="form-group">
             <label for="{{ form.reason.id }}">Reason for Deletion</label>

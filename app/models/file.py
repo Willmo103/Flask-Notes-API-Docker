@@ -55,10 +55,13 @@ class File(db.Model):
         db.session.commit()
 
 
-    def delete(self) -> bool:
+    def delete(self):
+        try:
+            os.remove(os.path.join(_upload_folder, self.file_name))
+        except FileNotFoundError:
+            print("File not found")
         self.deleted = True
         db.session.commit()
-        return True
 
     def is_editable(self, user_id: int) -> bool:
         return self.is_owned_by_user(user_id)
@@ -94,11 +97,17 @@ class File(db.Model):
             file_data = File.query.filter_by(file_name=file).first()
             if file_data is not None:
                 if file_data.file_size is None:
-                    file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
-                    print("File size: ", file_data.file_size)
+                    if os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1:
+                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))} B"
+                    elif os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1000:
+                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} KB"
+                    elif os.path.getsize(os.path.join(_upload_folder, file))/1000 < 1000000:
+                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000000:.2f} MB"
+                    else:
+                        file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000000000:.2f} GB"
+                    file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} KB"
                 if file_data.file_type is None:
                     file_data.file_type = file.split(".")[-1]
-                    print("File type: ", file_data.file_type)
                 db.session.commit()
 
     @staticmethod

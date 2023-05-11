@@ -12,7 +12,7 @@ __all__ = [
 
 
 @endpoint.route("/login", methods=["GET", "POST"])
-def login() -> str | Response:
+def login():
     if current_user.is_authenticated:
         return redirect(url_for("routes.index_page"))
     form = LoginForm()
@@ -33,7 +33,7 @@ def logout() -> Response:
 
 
 @endpoint.route("/register", methods=["GET", "POST"])
-def register() -> str | Response:
+def register():
     if current_user.is_authenticated:
         return redirect(url_for("routes.index_page"))
     form = RegistrationForm()

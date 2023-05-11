@@ -15,7 +15,7 @@ __all__ = [
 
 
 @endpoint.route("/note/add", methods=["GET", "POST"])
-def add_note() -> str | Response:
+def add_note():
     form = NoteForm()
     if form.validate_on_submit():
         note = Note(
@@ -32,7 +32,7 @@ def add_note() -> str | Response:
 
 @endpoint.route("/note/<int:note_id>/edit", methods=["GET", "POST"])
 @login_required
-def edit_note(note_id) -> str | Response:
+def edit_note(note_id):
     note = Note.query.get_or_404(note_id)
     if current_user.is_admin() or note.user_id == current_user.id:
         form = NoteForm(title=note.title, content=note.content, private=note.private)

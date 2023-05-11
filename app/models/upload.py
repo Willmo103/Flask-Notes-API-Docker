@@ -8,11 +8,15 @@ class Upload(db.Model):
     user_id = db.Column(
         db.Integer,
         db.ForeignKey("user.id"),
-        primary_key=True,
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), primary_key=True)
+    file_id = db.Column(
+        db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False
+    )
+
+    def __repr__(self) -> str:
+        return f"Upload('{self.upload_date}', '{self.user_id}', '{self.file_id}')"
 
     def __init__(
         self,
@@ -22,9 +26,10 @@ class Upload(db.Model):
         self.user_id = user_id
         self.file_id = file_id
 
-    def save(self) -> None:
+    def save(self) -> int:
         db.session.add(self)
         db.session.commit()
+        return True
 
     @staticmethod
     def record_upload(user_id: int, file_id: int) -> None:

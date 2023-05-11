@@ -1,6 +1,6 @@
 <!-- file_card.html -->
-<div class="row-md-4">
-    <div class="card my-3">
+<div class="row-md-2">
+    <div class="card my-2">
         <div class="card-body">
             {% if file.private %}
             <span class="badge bg-secondary">Private</span>
@@ -12,11 +12,10 @@
                 <p>Details: {{ file.details }}</p>
                 {% endif %}
             </div>
-            <a href="{{ url_for('routes.download_file', file_id=file.id) }}" class="btn btn-warning"
-                id="downloadBtn">Download
-                File</a>
+            <a href="{{ url_for('routes.download_file', file_id=file.id) }}" class="btn btn-primary btn-sm"
+                id="downloadBtn">Download</a>
             {% if file.is_editable(user.id) %}
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal"
                 data-bs-target="#fileModal{{ file.id }}">More Options</button>
             {% endif %}
         </div>
@@ -36,16 +35,14 @@
                 <div id="filePreview{{ file.id }}">
                     <div class="row">
                         <div class="col-ps-1">
-
                             <h6>Details:</h6>
-                            <p>Preview will be available later.</p>
                             <p>Size: {{ file.file_size }}</p>
                             {% if file.details %}
                             <p>Details: {{ file.details }}</p>
                             {% else %}
                             <p>Details: No details provided.</p>
                             {% endif %}
-                            <p>Uploaded on: {{ file.uploaded_on }}</p>
+                            <p>Uploaded on: {{ file.date_posted }}</p>
                         </div>
                     </div>
                 </div>

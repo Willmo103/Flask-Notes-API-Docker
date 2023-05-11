@@ -13,6 +13,7 @@ __all__ = [
     "search_notes",
 ]
 
+
 @endpoint.route("/note/add", methods=["GET", "POST"])
 def add_note() -> str | Response:
     form = NoteForm()
@@ -67,7 +68,6 @@ def get_user_notes(user_id) -> Response:
     return render_template("index.html", notes=notes, user=user)
 
 
-# TODO this needs to be a total search
 @endpoint.route("/note/search", methods=["GET", "POST"])
 def search_notes() -> Response:
     if request.method == "POST":
@@ -77,8 +77,11 @@ def search_notes() -> Response:
         except AttributeError:
             id = None
         notes = Note.search(search_term, id)
+        if len(notes) == 0 :
+            notes = None
         return render_template(
-            "search_results.html",
+            "note_search_results.html",
+            search_term=search_term,
             notes=notes,
             title=f"Search Results for {search_term}",
         )

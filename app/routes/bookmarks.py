@@ -10,6 +10,7 @@ __all__ = [
     "delete_bookmark",
 ]
 
+
 @endpoint.route("/bookmark/add", methods=["GET", "POST"])
 def create_bookmark() -> Response:
     # Implement bookmark creation logic here

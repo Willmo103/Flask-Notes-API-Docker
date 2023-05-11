@@ -21,7 +21,7 @@ class File(db.Model):
     file_type: str = db.Column(db.String(100), nullable=True, default=None)
     deleted: bool = db.Column(db.Boolean, nullable=False, default=False)
     date_deleted: datetime = db.Column(db.DateTime, nullable=True, default=None)
-    private: bool = db.Column(db.Boolean, nullable=False, default=True)
+    private: bool = db.Column(db.Boolean, nullable=False, default=False)
     details: str = db.Column(db.String(200), nullable=True, default=None)
 
     def __init__(
@@ -50,59 +50,66 @@ class File(db.Model):
     def is_private(self) -> bool:
         return self.private
 
-    def save(self) -> None:
+    def save(self) -> int:
         db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        try:
+            os.remove(os.path.join(_upload_folder, self.file_name))
+        except FileNotFoundError:
+            print("File not found")
+        self.deleted = True
         db.session.commit()
 
     def is_editable(self, user_id: int) -> bool:
         return self.is_owned_by_user(user_id)
 
+    def can_be_viewed(self, user_id: int | None) -> bool:
+        if user_id is None:
+            return not self.private or self.is_anonymous()
+        return self.is_owned_by_user(user_id) or not self.private
+
     @staticmethod
     def get_all_user_files(user_id) -> List | None:
-        return File.query.filter_by(user_id=user_id).all()
+        return [
+            file
+            for file in File.query.filter_by(user_id=user_id).all()
+            if not file.deleted
+        ]
 
     @staticmethod
-    def delete_file(file_id: int, user) -> None:
-        file: File = File.query.filter_by(id=file_id).first()
-        if file:
-            file: File = File.query.filter(
-                and_(File.id == file_id, File.user_id == user.id)
-            ).first()
-        else:
-            file: File = File.query.filter_by(id=file_id).first()
-        os.remove(os.path.join(_upload_folder, file.file_name))
-        file.deleted = True
-        file.date_deleted = datetime.utcnow()
-        db.session.commit()
-
-    @staticmethod
-    def return_index_page_files(user_id: int) -> List | None:
+    def return_index_page_files(user_id: int | None) -> List | None:
         File.read_info_from_uploads_dir()
-        if user_id is not None:
-            return File.query.filter(
-                or_(
-                    File.user_id == user_id,
-                    File.user_id.is_(None),
-                    File.private.is_(False),
-                )
-            ).all()
-        return File.query.filter(
-            or_(File.user_id.is_(None), File.private.is_(False))
-        ).all()
+        return [
+            file
+            for file in File.query.all()
+            if file.can_be_viewed(user_id) and not file.deleted
+        ]
 
     @staticmethod
     def read_info_from_uploads_dir() -> None:
         for file in File.scan_folder():
-            # print("Read info from files call: ", file)
             file_data = File.query.filter_by(file_name=file).first()
-            all_files = File.query.all()
-            # print("All files: ", all_files)
             if file_data is not None:
                 if file_data.file_size is None:
-                    print("File size: ", file_data.file_size)
-                    file_data.file_size = f"{os.path.getsize(os.path.join(_upload_folder, file))/1000:.2f} MB"
+                    file_size_bytes = os.path.getsize(
+                        os.path.join(_upload_folder, file)
+                    )
+                    file_size_kb = file_size_bytes / 1024
+                    file_size_mb = file_size_kb / 1024
+                    file_size_gb = file_size_mb / 1024
+
+                    if file_size_bytes < 1024:
+                        file_data.file_size = f"{file_size_bytes} B"
+                    elif file_size_kb < 1024:
+                        file_data.file_size = f"{file_size_kb:.2f} KB"
+                    elif file_size_mb < 1024:
+                        file_data.file_size = f"{file_size_mb:.2f} MB"
+                    else:
+                        file_data.file_size = f"{file_size_gb:.2f} GB"
+
                 if file_data.file_type is None:
-                    print("File type: ", file_data.file_type)
                     file_data.file_type = file.split(".")[-1]
                 db.session.commit()
 
@@ -116,3 +123,23 @@ class File(db.Model):
     def get_admin_files(current_user) -> List | None:
         if current_user.is_admin():
             return File.query.all()
+
+    @classmethod
+    def init_with_id(cls, filename: str):
+        file = File(file_name=filename)
+        return file.save()
+
+    @staticmethod
+    def search(search_term: str, user_id) -> List:
+        if search_term != "":
+            return [
+                file
+                for file in File.query.filter(
+                    or_(
+                        File.file_name.contains(search_term),
+                        File.details.contains(search_term),
+                    )
+                )
+                if file.can_be_viewed(user_id) and not file.deleted
+            ]
+        return []

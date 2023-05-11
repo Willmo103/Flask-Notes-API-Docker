@@ -10,6 +10,7 @@ __all__ = [
     "delete_group",
 ]
 
+
 @endpoint.route("/group/add", methods=["GET", "POST"])
 def create_group() -> Response:
     # Implement group creation logic here

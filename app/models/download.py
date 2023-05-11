@@ -13,7 +13,9 @@ class Download(db.Model):
         nullable=True,
         default=None,
     )
-    file_id = db.Column(db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False)
+    file_id = db.Column(
+        db.Integer, db.ForeignKey("file.id", ondelete="NO ACTION"), nullable=False
+    )
 
     def __init__(
         self,
@@ -24,6 +26,9 @@ class Download(db.Model):
         self.user_id = user_id
         self.file_id = file_id
         self.download_date = download_date
+
+    def __repr__(self) -> str:
+        return f"Download('{self.download_date}', '{self.user_id}', '{self.file_id}')"
 
     def save(self) -> None:
         db.session.add(self)

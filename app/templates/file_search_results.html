@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+    <div class="row mt-1">
+        <div class="col-12">
+            {% if files is none %}
+            <h3>No search results for: "{{ search_term }}"</h3>
+            {% else %}
+            <h3>Search results for: "{{ search_term }}"</h3>
+            {% endif %}
+            <div class="tab-pane fade" id="files" role="tabpanel" aria-labelledby="files-tab">
+                <nav class="navbar navbar-expand-md mb-4">
+                    <div class="container-fluid">
+                        <div class="collapse navbar-collapse" id="navbarCollapse">
+                            {% if current_user.is_authenticated %}
+                            <ul class="navbar-nav mb-2 mb-md-0">
+                                <li>
+                                    <a class="nav-link"
+                                        href="{{ url_for('routes.get_user_files', user_id=current_user.id) }}">My
+                                        Files</a>
+                                </li>
+                            </ul>
+                            {% endif %}
+                            <ul class="navbar-nav me-auto mb-2 mb-md-0">
+                                <li class="nav-item">
+                                    <a class="nav-link"
+                                        href="{{ url_for('routes.get_user_files', user_id=current_user.id) }}">MyFiles</a>
+                                </li>
+                            </ul>
+                            <form class="d-flex me-2" action="{{ url_for('routes.search_files') }}" method="POST">
+                                <input class="form-control me-2" type="search" name="search_term"
+                                    placeholder="Search Notes" aria-label="Search">
+                                <button class="btn btn-outline-success" type="submit">Search Files</button>
+                            </form>
+                        </div>
+                    </div>
+                </nav>
+                <div class="row ml-2 mt-2">
+                    {% if files is none %}
+                    {% else %}
+                    {% for file in files %}
+                    <div class="col-md-6 col-lg-4">
+                        {% include "file_card.html" %}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+{% block extra_js %}
+{% endblock %}

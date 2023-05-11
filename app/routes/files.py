@@ -155,15 +155,19 @@ def download_file(file_id) -> Response:
 
 @endpoint.route("/file/search", methods=["GET", "POST"])
 def search_files() -> Response:
-    if request.method == "GET":
-        return render_template("search_files.html", title="Search Files")
-    elif request.method == "POST":
-        files = []
-        if current_user.is_authenticated:
-            user_id = current_user.id
-        else:
-            user_id = None
-        all_files = File.query.all()
-        for file in all_files:
-            if file.can_be_viewed(user_id):
-                files.append(file)
+    if request.method == "POST":
+        search_term = request.form["search_term"]
+        try:
+            id = current_user.id
+        except AttributeError:
+            id = None
+        files = File.search(search_term, id)
+        if len(files) == 0 :
+            files = None
+        return render_template(
+            "file_search_results.html",
+            search_term=search_term,
+            title="Search Results",
+            files=files,
+        )
+    return render_template(url_for("routes.index_page"))

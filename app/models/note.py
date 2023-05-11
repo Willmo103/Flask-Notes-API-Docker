@@ -52,17 +52,18 @@ class Note(db.Model):
         return Note.query.filter_by(user_id=None).all()
 
     @staticmethod
-    def search(search_term: str, user_id) -> List | None:
-        if user_id is None:
-            notes = Note.query.filter(
-                and_(Note.content.contains(search_term), Note.user_id.is_(None))
-            ).all()
-        else:
-            notes = Note.query.filter(
-                Note.content.contains(search_term),
-                or_(Note.user_id == user_id, Note.user_id.is_(None)),
-            ).all()
-        return notes
+    def search(search_term: str, user_id) -> List:
+        if search_term != "":
+            return [
+                note
+                for note in Note.query.filter(
+                    or_(
+                        Note.content.contains(search_term), Note.title.contains(search_term)
+                    )
+                ).all()
+                if note.is_viewable_by_user(user_id)
+            ]
+        return []
 
     @staticmethod
     def index_page_notes(user_id: int | None) -> List | None:

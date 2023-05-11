@@ -128,3 +128,18 @@ class File(db.Model):
     def init_with_id(cls, filename: str):
         file = File(file_name=filename)
         return file.save()
+
+    @staticmethod
+    def search(search_term: str, user_id) -> List:
+        if search_term != "":
+            return [
+                file
+                for file in File.query.filter(
+                    or_(
+                        File.file_name.contains(search_term),
+                        File.details.contains(search_term),
+                    )
+                )
+                if file.can_be_viewed(user_id) and not file.deleted
+            ]
+        return []

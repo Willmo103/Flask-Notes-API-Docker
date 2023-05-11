@@ -65,12 +65,11 @@ def upload_file() -> str | Response:
     return redirect(url_for("routes.index_page"))
 
 
-@endpoint.route("/user/<int:user_id>/files")
+@endpoint.route("/user/files")
 @login_required
-def get_user_files(user_id) -> Response:
-    user: User = User.query.get_or_404(user_id)
-    files = File.get_all_user_files(user_id)
-    return render_template("index.html", files=files, user=user)
+def get_user_files() -> Response:
+    files = File.get_all_user_files(current_user.id)
+    return render_template("file_search_results.html", files=files, user=current_user, my_files=True)
 
 
 @endpoint.route("/file/<int:file_id>/edit", methods=["GET", "POST"])

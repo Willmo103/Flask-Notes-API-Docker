@@ -3,13 +3,15 @@
 <div class="container">
     <div class="row mt-1">
         <div class="col-12">
-            {% block heading %}
+            {% if my_files %}
+            <h3>My Files</h3>
+            {% else %}
             {% if files is none %}
             <h3>No search results for: "{{ search_term }}"</h3>
             {% else %}
             <h3>Search results for: "{{ search_term }}"</h3>
             {% endif %}
-            {% endblock %}
+            {% endif %}
             <div class="tab-pane fade show active" id="files" role="tabpanel" aria-labelledby="files-tab">
                 <nav class="navbar navbar-expand-md mb-4">
                     <div class="container-fluid">
@@ -31,8 +33,8 @@
                             </ul>
                             <form class="d-flex me-2" action="{{ url_for('routes.search_files') }}" method="POST">
                                 <input class="form-control me-2" type="search" name="search_term"
-                                    placeholder="Search Notes" aria-label="Search">
-                                <button class="btn btn-outline-success" type="submit">Search Files</button>
+                                    placeholder="Search Files" aria-label="Search">
+                                <button class="btn btn-outline-success" type="submit">Search</button>
                             </form>
                         </div>
                     </div>

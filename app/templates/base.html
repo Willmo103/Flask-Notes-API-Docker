@@ -51,7 +51,7 @@
     </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="container">
+    <div class="container-fluid">
         {% for category, message in messages %}
         <div class="alert alert-{{ category }} auto-hide" role="alert">
             {{ message }}
@@ -60,7 +60,7 @@
     </div>
     {% endif %}
     {% endwith %}
-    <main class="container">
+    <main class="container-fluid">
         {% block content %}{% endblock %}
     </main>
     <div class="modal fade" id="fileUploadModal" tabindex="-1" aria-labelledby="fileUploadModalLabel"

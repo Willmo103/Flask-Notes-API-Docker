@@ -18,12 +18,10 @@ from . import endpoint
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 
 
-@endpoint.route("/file/upload", methods=["GET", "POST"])
+@endpoint.route("/file/upload", methods=["POST"])
 def upload_file() -> str | Response:
     form = FileUploadForm()
-    if form.file.data is None:
-        uploaded_file = form.file_dz.data
-    elif form.file_dz.data is None:
+    if form.validate_on_submit():
         uploaded_file = form.file.data
     else:
         flash("Failed to upload file")
@@ -33,14 +31,12 @@ def upload_file() -> str | Response:
 
     if current_user.is_authenticated:
         new_file_id = File.init_with_id(secure_filename)
-        print("New file id", new_file_id)
         new_file: File = File.query.filter_by(file_name=secure_filename).first()
         if new_file:
             print("New file", new_file)
             new_file.user_id = current_user.id
             new_file.private = form.private.data
             new_file.details = form.details.data
-            print("New file", new_file)
             new_file.save()
         else:
             raise Exception("Failed to create new file")
@@ -49,7 +45,6 @@ def upload_file() -> str | Response:
             new_file.id,
             current_user.id,
         )
-        print("New upload", new_upload)
         saved = new_upload.save()
     else:
         new_file = File.init_with_id(secure_filename)

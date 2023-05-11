@@ -73,3 +73,8 @@ class Note(db.Model):
     @staticmethod
     def get_user_notes(user_id: int) -> List | None:
         return Note.query.filter_by(user_id=user_id).all()
+
+    @staticmethod
+    def get_owner_username(user_id: int) -> str:
+        from app.models.user import User
+        return User.get_user(user_id).username

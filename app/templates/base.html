@@ -39,9 +39,8 @@
                     {% endif %}
                 </ul>
                 <ul class="navbar-nav me-2 mb-2 mb-md-0">
-                    {% if current_user.is_admin() %}
+                    {% if admin %}
                     <li class="nav-item">
-
                         <a class="nav-link" href="#">Admin Dashboard</a>
                     </li>
                     {% endif %}
@@ -65,12 +64,22 @@
     </nav>
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-    <div class="container-fluid">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }} auto-hide" role="alert">
-            {{ message }}
+    <!--Flash Message Modal -->
+    <div class="modal fade" id="flashModal" tabindex="-1" aria-labelledby="flashModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-body">
+                    {% for category, message in get_flashed_messages(with_categories=true) %}
+                    <div class="alert alert-{{ category }} text-center" role="alert">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
         </div>
-        {% endfor %}
     </div>
     {% endif %}
     {% endwith %}
@@ -102,26 +111,25 @@
                                     {{ upload_form.file_dz() }}
                                 </div>
                             </div>
-                            <div class="col-12">
-                                <div class="mb-3">
+                            <div class="row">
+                                <div class="col-10">
                                     {{ upload_form.details.label(class="form-label") }}
                                     {{ upload_form.details(class="form-control") }}
-                                </div>
-                                {% if current_user.is_authenticate %}
-                                <div class="mb-3">
-                                    {{ upload_form.private.label(class="form-label") }} {{
-                                    upload_form.private(class="form-control")}}
+                                    {% if current_user.is_authenticated %}
+                                    {{ upload_form.private.label() }} {{
+                                    upload_form.private() }}
                                 </div>
                                 {% endif %}
                             </div>
+                            <div class="text-end col-12 mx-auto">
+                                {{ upload_form.submit(class="btn btn-primary") }}
+                            </div>
                         </div>
-                        <div class="text-end">
-                            {{ upload_form.submit(class="btn btn-primary") }}
-                        </div>
-                    </form>
                 </div>
+                </form>
             </div>
         </div>
+    </div>
     </div>
     <style>
         @media (min-width: 992px) {
@@ -173,22 +181,22 @@
             </div>
         </div>
     </div>
-
+    {% set flash_messages = get_flashed_messages() %}
+    <script>
+        $(document).ready(function () {
+            var flashMessages = "{{ flash_messages|length > 0 }}";
+            if (flashMessages === 'True') {
+                $('#flashModal').modal('show');
+                setTimeout(function () {
+                    $('#flashModal').modal('hide');
+                }, 5000); // The modal will disappear after 5 seconds
+            }
+        });
+    </script>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dropzone/5.7.1/min/dropzone.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () {
-                let autoHideAlerts = document.querySelectorAll('.auto-hide');
-                autoHideAlerts.forEach(function (alert) {
-                    alert.style.display = 'none';
-                });
-            }, 3000);
-        });
-    </script>
-
 </body>
 
 </html>

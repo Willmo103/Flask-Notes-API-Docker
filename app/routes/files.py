@@ -12,13 +12,12 @@ from app.models import File, Upload, Download, User, Deletion
 from app.forms import DeleteFileForm, FileUploadForm, EditFileForm
 from werkzeug.utils import secure_filename as s_fn
 import os
-from datetime import datetime as dt
 from . import endpoint
 
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 
 
-@endpoint.route("/file/upload", methods=["GET", "POST"])
+@endpoint.route("/file/upload", methods=[ "POST"])
 def upload_file() -> str | Response:
     form = FileUploadForm()
     if form.file.data is None:
@@ -32,15 +31,11 @@ def upload_file() -> str | Response:
     secure_filename = s_fn(uploaded_file.filename)
 
     if current_user.is_authenticated:
-        new_file_id = File.init_with_id(secure_filename)
-        print("New file id", new_file_id)
         new_file: File = File.query.filter_by(file_name=secure_filename).first()
         if new_file:
-            print("New file", new_file)
             new_file.user_id = current_user.id
             new_file.private = form.private.data
             new_file.details = form.details.data
-            print("New file", new_file)
             new_file.save()
         else:
             raise Exception("Failed to create new file")
@@ -49,13 +44,11 @@ def upload_file() -> str | Response:
             new_file.id,
             current_user.id,
         )
-        print("New upload", new_upload)
         saved = new_upload.save()
     else:
-        new_file = File.init_with_id(secure_filename)
+        new_file: File = File.query.filter_by(file_name=secure_filename).first()
         new_upload = Upload(file_id=new_file.id)
         saved = new_upload.save()
-
     if saved and new_file.id is not None:
         uploaded_file.save(os.path.join(_upload_folder, secure_filename))
         flash("File uploaded successfully")
@@ -65,12 +58,13 @@ def upload_file() -> str | Response:
     return redirect(url_for("routes.index_page"))
 
 
-@endpoint.route("/user/<int:user_id>/files")
+@endpoint.route("/user/files")
 @login_required
-def get_user_files(user_id) -> Response:
-    user: User = User.query.get_or_404(user_id)
-    files = File.get_all_user_files(user_id)
-    return render_template("index.html", files=files, user=user)
+def get_user_files() -> Response:
+    files = File.get_all_user_files(current_user.id)
+    return render_template(
+        "file_search_results.html", files=files, user=current_user, my_files=True
+    )
 
 
 @endpoint.route("/file/<int:file_id>/edit", methods=["GET", "POST"])
@@ -162,7 +156,7 @@ def search_files() -> Response:
         except AttributeError:
             id = None
         files = File.search(search_term, id)
-        if len(files) == 0 :
+        if len(files) == 0:
             files = None
         return render_template(
             "file_search_results.html",

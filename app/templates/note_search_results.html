@@ -3,10 +3,14 @@
 <div class="container">
     <div class="row mt-1">
         <div class="col-12">
+            {% if my_notes %}
+            <h3>My Notes</h3>
+            {% else %}
             {% if notes is none %}
             <h3>No search results for: "{{ search_term }}"</h3>
             {% else %}
             <h3>Search results for: "{{ search_term }}"</h3>
+            {% endif %}
             {% endif %}
             <div class="tab-pane fade show active" id="notes" role="tabpanel" aria-labelledby="notes-tab">
                 <nav class="navbar navbar-expand-md mb-4">

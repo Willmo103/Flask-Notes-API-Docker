@@ -1,6 +1,6 @@
 from typing import List
 from datetime import datetime
-from sqlalchemy import or_, and_
+from sqlalchemy import or_
 from app import db
 
 
@@ -47,6 +47,12 @@ class Note(db.Model):
             return not self.private or self.is_anonymous()
         return self.is_owned_by_user(user_id) or not self.private
 
+    def get_owner(self) -> str:
+        from app.models.user import User
+
+        owner = User.query.filter_by(id=self.user_id).first()
+        return owner
+
     @staticmethod
     def get_all_anonymous_notes() -> List | None:
         return Note.query.filter_by(user_id=None).all()
@@ -58,7 +64,8 @@ class Note(db.Model):
                 note
                 for note in Note.query.filter(
                     or_(
-                        Note.content.contains(search_term), Note.title.contains(search_term)
+                        Note.content.contains(search_term),
+                        Note.title.contains(search_term),
                     )
                 ).all()
                 if note.is_viewable_by_user(user_id)
@@ -68,3 +75,7 @@ class Note(db.Model):
     @staticmethod
     def index_page_notes(user_id: int | None) -> List | None:
         return [note for note in Note.query.all() if note.is_viewable_by_user(user_id)]
+
+    @staticmethod
+    def get_user_notes(user_id: int) -> List | None:
+        return Note.query.filter_by(user_id=user_id).all()

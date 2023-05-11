@@ -1,18 +1,24 @@
 <!-- note.html -->
 {% extends "base.html" %}
 {% block content %}
-<h2>{{ title }}</h2>
-<form method="POST" action="{{ request.url }}">
-    {{ form.hidden_tag() }}
-    <div class="mb-3">
-        {{ form.title.label }} {{ form.title(class="form-control") }}
-    </div>
-    <div class="mb-3">
-        {{ form.content.label }} {{ form.content(class="form-control", rows=10) }}
-        {% if user.is_authenticated %}
-        {{ form.private.label }} {{ form.private() }}
-        {% endif %}
-    </div>
-    {{ form.submit(class="btn btn-primary") }}
-</form>
+<div class="container d-block-centered">
+    <form method="POST" action="{{ request.url }}">
+        {{ form.hidden_tag() }}
+        <div class="row">
+            <div class="col-10 col-lg-6 mx-auto">
+                <h2 class="mb-5">{{ title }}</h2>
+                <div class="mb-3">
+                    {{ form.title.label }} {{ form.title(class="form-control") }}
+                </div>
+                <div class="mb-3">
+                    {{ form.content.label }} {{ form.content(class="form-control", rows=10) }}
+                    {% if user.is_authenticated %}
+                    {{ form.private.label }} {{ form.private() }}
+                    {% endif %}
+                </div>
+                {{ form.submit(class="btn btn-primary") }}
+            </div>
+        </div>
+    </form>
+</div>
 {% endblock %}

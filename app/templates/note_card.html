@@ -1,10 +1,19 @@
 <!-- note_card.html -->
 <div class="row-md-2">
-    <div class="card my-2">
-        <div class="card-body">
+    <div class="card  my-2">
+        <div class="card-header">
             {% if note.private %}
-            <span class="badge bg-secondary">Private</span>
+            <span class="badge rounded-pill bg-danger">Private</span>
             {% endif %}
+            {% if note.user_id == current_user.id %}
+            <span class="badge rounded-pill bg-info">Owned by Me</span>
+            {% elif note.is_anonymous() %}
+            <span class="badge rounded-pill bg-success">Public</span>
+            {% else %}
+            <span class="badge rounded-pill bg-secondary">{{ note.get_owner().username }}</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
             <h5 class="card-title">{{ note.title }}</h5>
             <p class="card-text">{{ note.content | markdown | striptags | truncate(100, True) }}</p>
             <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
@@ -12,6 +21,7 @@
         </div>
     </div>
 </div>
+
 
 <!-- Note Modal -->
 <div class="modal fade" id="noteModal{{ note.id }}" tabindex="-1" aria-labelledby="noteModalLabel{{ note.id }}"

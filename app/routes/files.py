@@ -151,3 +151,19 @@ def download_file(file_id) -> Response:
     else:
         flash("You do not have permission to download this file.")
         return redirect(url_for("routes.login"))
+
+
+@endpoint.route("/file/search", methods=["GET", "POST"])
+def search_files() -> Response:
+    if request.method == "GET":
+        return render_template("search_files.html", title="Search Files")
+    elif request.method == "POST":
+        files = []
+        if current_user.is_authenticated:
+            user_id = current_user.id
+        else:
+            user_id = None
+        all_files = File.query.all()
+        for file in all_files:
+            if file.can_be_viewed(user_id):
+                files.append(file)

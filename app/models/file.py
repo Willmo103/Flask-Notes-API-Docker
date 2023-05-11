@@ -65,30 +65,27 @@ class File(db.Model):
     def is_editable(self, user_id: int) -> bool:
         return self.is_owned_by_user(user_id)
 
-    @staticmethod
-    def get_all_user_files(user_id) -> List | None:
-        return File.query.filter_by(user_id=user_id).all()
+    def can_be_viewed(self, user_id: int | None) -> bool:
+        if user_id is None:
+            return not self.private or self.is_anonymous()
+        return self.is_owned_by_user(user_id) or not self.private
 
     @staticmethod
-    def return_index_page_files(user_id: int) -> List | None:
+    def get_all_user_files(user_id) -> List | None:
+        return [
+            file
+            for file in File.query.filter_by(user_id=user_id).all()
+            if not file.deleted
+        ]
+
+    @staticmethod
+    def return_index_page_files(user_id: int | None) -> List | None:
         File.read_info_from_uploads_dir()
-        if user_id is not None:
-            return File.query.filter(
-                and_(
-                    or_(
-                        File.user_id == user_id,
-                        File.user_id.is_(None),
-                        File.private.is_(False),
-                    ),
-                    File.deleted.is_(False),
-                )
-            ).all()
-        return File.query.filter(
-            and_(
-                or_(File.user_id.is_(None), File.private.is_(False)),
-                File.deleted.is_(False),
-            )
-        ).all()
+        return [
+            file
+            for file in File.query.all()
+            if file.can_be_viewed(user_id) and not file.deleted
+        ]
 
     @staticmethod
     def read_info_from_uploads_dir() -> None:

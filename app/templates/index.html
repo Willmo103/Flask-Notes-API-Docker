@@ -63,9 +63,10 @@
                                 {% endif %}
                                 <ul class="navbar-nav me-auto mb-2 mb-md-0">
                                     <li>
-                                        <a class="nav-link"
-                                            href="{{ url_for('routes.get_user_files', user_id=current_user.id) }}">My
-                                            Files</a>
+                                        <a type="nav-link" class="nav-link" data-bs-toggle="modal"
+                                            data-bs-target="#fileUploadModal" href="">
+                                            Upload a File
+                                        </a>
                                     </li>
                                 </ul>
                                 <form class="d-flex me-2" action="{{ url_for('routes.search_files') }}" method="POST">

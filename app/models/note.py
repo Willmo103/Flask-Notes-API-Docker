@@ -58,7 +58,8 @@ class Note(db.Model):
                 note
                 for note in Note.query.filter(
                     or_(
-                        Note.content.contains(search_term), Note.title.contains(search_term)
+                        Note.content.contains(search_term),
+                        Note.title.contains(search_term),
                     )
                 ).all()
                 if note.is_viewable_by_user(user_id)

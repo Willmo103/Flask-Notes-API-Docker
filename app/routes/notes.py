@@ -64,7 +64,9 @@ def delete_note(note_id) -> Response:
 @login_required
 def get_user_notes() -> Response:
     notes = Note.get_user_notes(current_user.id)
-    return render_template("note_search_results.html", notes=notes, user=current_user, my_notes=True)
+    return render_template(
+        "note_search_results.html", notes=notes, user=current_user, my_notes=True
+    )
 
 
 @endpoint.route("/note/search", methods=["GET", "POST"])
@@ -76,7 +78,7 @@ def search_notes() -> Response:
         except AttributeError:
             id = None
         notes = Note.search(search_term, id)
-        if len(notes) == 0 :
+        if len(notes) == 0:
             notes = None
         return render_template(
             "note_search_results.html",

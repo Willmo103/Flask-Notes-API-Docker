@@ -1,10 +1,18 @@
 <!-- file_card.html -->
 <div class="row-md-2">
-    <div class="card my-2">
-        <div class="card-body">
+    <div class="card border-secondary my-2">
+        <div class="card-header">
             {% if file.private %}
-            <span class="badge bg-secondary">Private</span>
+            <span class="badge rounded-pill bg-secondary">Private</span>
             {% endif %}
+            {% if file.user_id == current_user.id %}
+            <span class="badge rounded-pill bg-info">Owned by Me</span>
+            {% endif %}
+            {% if file.is_anonymous() %}
+            <span class="badge rounded-pill bg-warning text-dark">Anonymous</span>
+            {% endif %}
+        </div>
+        <div class="card-body">
             <h5 class="card-title">{{ file.file_name }}</h5>
             <div class="card-text">
                 <p>Size: {{ file.file_size }}</p>

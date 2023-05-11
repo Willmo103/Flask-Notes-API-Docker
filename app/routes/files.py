@@ -69,7 +69,9 @@ def upload_file() -> str | Response:
 @login_required
 def get_user_files() -> Response:
     files = File.get_all_user_files(current_user.id)
-    return render_template("file_search_results.html", files=files, user=current_user, my_files=True)
+    return render_template(
+        "file_search_results.html", files=files, user=current_user, my_files=True
+    )
 
 
 @endpoint.route("/file/<int:file_id>/edit", methods=["GET", "POST"])
@@ -161,7 +163,7 @@ def search_files() -> Response:
         except AttributeError:
             id = None
         files = File.search(search_term, id)
-        if len(files) == 0 :
+        if len(files) == 0:
             files = None
         return render_template(
             "file_search_results.html",

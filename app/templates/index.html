@@ -23,8 +23,7 @@
                                     {% if current_user.is_authenticated %}
                                     <ul class="navbar-nav mb-2 mb-md-0">
                                         <li class="nav-item">
-                                            <a class="nav-link"
-                                                href="{{ url_for('routes.get_user_notes', user_id=current_user.id) }}">My
+                                            <a class="nav-link" href="{{ url_for('routes.get_user_notes') }}">My
                                                 Notes</a>
                                         </li>
                                     </ul>

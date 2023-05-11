@@ -68,3 +68,7 @@ class Note(db.Model):
     @staticmethod
     def index_page_notes(user_id: int | None) -> List | None:
         return [note for note in Note.query.all() if note.is_viewable_by_user(user_id)]
+
+    @staticmethod
+    def get_user_notes(user_id: int) -> List | None:
+        return Note.query.filter_by(user_id=user_id).all()

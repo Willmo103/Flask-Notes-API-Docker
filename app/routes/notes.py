@@ -60,12 +60,11 @@ def delete_note(note_id) -> Response:
     return redirect(url_for("routes.index_page"))
 
 
-@endpoint.route("/user/<int:user_id>/notes")
+@endpoint.route("/user/notes")
 @login_required
-def get_user_notes(user_id) -> Response:
-    user = User.query.get_or_404(user_id)
-    notes = user.get_notes()
-    return render_template("index.html", notes=notes, user=user)
+def get_user_notes() -> Response:
+    notes = Note.get_user_notes(current_user.id)
+    return render_template("note_search_results.html", notes=notes, user=current_user, my_notes=True)
 
 
 @endpoint.route("/note/search", methods=["GET", "POST"])

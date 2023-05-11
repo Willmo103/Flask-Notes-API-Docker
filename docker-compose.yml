@@ -2,19 +2,26 @@ version: '3.8'
 
 services:
   web:
-    container_name: note-server-container
+    container_name: infoDock-v2.0
     image: willmo103/note-server:latest
     working_dir: /src
-    ports:
-      - "4202:4202"
-    environment:
-      - DATABASE_URL=sqlite:///notes.db
     volumes:
-      - db-data:/data
-    command: flask run --host=0.0.0.0 --port=4202
-    restart: always
-    tty: true
-    stdin_open: true
+      - ./uploads:/src/uploads
+      - ./db-data:/src/instance/notes.db
+    ports:
+     - "4202:4202"
+    environment:
+       - SECRET_KEY=${SECRET_KEY}
+       - DATABASE_URL_POSTGRES=${DATABASE_URL_POSTGRES}
+       - DATABASE_URL_SQLITE=${DATABASE_URL_SQLITE}
+       - SQLALCHEMY_TRACK_MODIFICATIONS=${SQLALCHEMY_TRACK_MODIFICATIONS}
+       - SQLALCHEMY_ECHO=${SQLALCHEMY_ECHO}
+       - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
+       - UPLOAD_FOLDER=${UPLOAD_FOLDER}
+    env_file:
+      - .env
 
 volumes:
-  db-data:
+  uploads: {}
+  db-data: {}
+

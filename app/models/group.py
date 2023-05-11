@@ -43,7 +43,7 @@ class Group(db.Model):
         db.session.commit()
 
     @staticmethod
-    def return_index_page_groups_and_bookmarks(user) -> List | None:
+    def return_index_page_groups_and_bookmarks(user):
         if user.is_authenticated:
             return Group.query.filter_by(
                 or_(

@@ -17,8 +17,8 @@ from . import endpoint
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 
 
-@endpoint.route("/file/upload", methods=[ "POST"])
-def upload_file() -> str | Response:
+@endpoint.route("/file/upload", methods=["POST"])
+def upload_file():
     form = FileUploadForm()
     if form.file.data is None:
         uploaded_file = form.file_dz.data

@@ -1,7 +1,7 @@
 from flask import render_template, redirect, url_for, flash, Response, request
 from flask_login import current_user, login_required
 from app import db
-from app.models import Note, User
+from app.models import Note
 from app.forms import NoteForm
 from . import endpoint
 

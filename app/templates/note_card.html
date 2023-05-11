@@ -7,9 +7,10 @@
             {% endif %}
             {% if note.user_id == current_user.id %}
             <span class="badge rounded-pill bg-info">Owned by Me</span>
-            {% endif %}
-            {% if note.is_anonymous() %}
-            <span class="badge rounded-pill bg-warning text-dark">Anonymous</span>
+            {% elif note.is_anonymous() %}
+            <span class="badge rounded-pill bg-success">Public</span>
+            {% else %}
+            <span class="badge rounded-pill bg-secondary">{{ note.get_owner().username }}</span>
             {% endif %}
         </div>
         <div class="card-body">

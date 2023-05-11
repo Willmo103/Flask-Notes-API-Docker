@@ -41,12 +41,6 @@ class User(UserMixin, db.Model):
     def get_files(self):
         return File.query.filter_by(user_id=self.id).all()
 
-    def get_username(self, user_id: int):
-        user: User = User.query.filter_by(id=user_id).first()
-        if user is None:
-            raise Exception("User not found")
-        return user
-
     def save(self) -> None:
         db.session.add(self)
         db.session.commit()

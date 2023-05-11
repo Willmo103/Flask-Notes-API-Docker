@@ -12,16 +12,17 @@ from app.models import File, Upload, Download, User, Deletion
 from app.forms import DeleteFileForm, FileUploadForm, EditFileForm
 from werkzeug.utils import secure_filename as s_fn
 import os
-from datetime import datetime as dt
 from . import endpoint
 
 _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 
 
-@endpoint.route("/file/upload", methods=["POST"])
+@endpoint.route("/file/upload", methods=[ "POST"])
 def upload_file() -> str | Response:
     form = FileUploadForm()
-    if form.validate_on_submit():
+    if form.file.data is None:
+        uploaded_file = form.file_dz.data
+    elif form.file_dz.data is None:
         uploaded_file = form.file.data
     else:
         flash("Failed to upload file")
@@ -30,7 +31,6 @@ def upload_file() -> str | Response:
     secure_filename = s_fn(uploaded_file.filename)
 
     if current_user.is_authenticated:
-        new_file_id = File.init_with_id(secure_filename)
         new_file: File = File.query.filter_by(file_name=secure_filename).first()
         if new_file:
             print("New file", new_file)
@@ -47,10 +47,9 @@ def upload_file() -> str | Response:
         )
         saved = new_upload.save()
     else:
-        new_file = File.init_with_id(secure_filename)
+        new_file: File = File.query.filter_by(file_name=secure_filename).first()
         new_upload = Upload(file_id=new_file.id)
         saved = new_upload.save()
-
     if saved and new_file.id is not None:
         uploaded_file.save(os.path.join(_upload_folder, secure_filename))
         flash("File uploaded successfully")

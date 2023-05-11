@@ -42,7 +42,7 @@ class Note(db.Model):
             return True
         return False
 
-    def is_viewable_by_user(self, user_id: int | None) -> bool:
+    def is_viewable_by_user(self, user_id) -> bool:
         if user_id is None:
             return not self.private or self.is_anonymous()
         return self.is_owned_by_user(user_id) or not self.private
@@ -54,7 +54,7 @@ class Note(db.Model):
         return owner
 
     @staticmethod
-    def get_all_anonymous_notes() -> List | None:
+    def get_all_anonymous_notes():
         return Note.query.filter_by(user_id=None).all()
 
     @staticmethod
@@ -73,9 +73,9 @@ class Note(db.Model):
         return []
 
     @staticmethod
-    def index_page_notes(user_id: int | None) -> List | None:
+    def index_page_notes(user_id):
         return [note for note in Note.query.all() if note.is_viewable_by_user(user_id)]
 
     @staticmethod
-    def get_user_notes(user_id: int) -> List | None:
+    def get_user_notes(user_id: int):
         return Note.query.filter_by(user_id=user_id).all()

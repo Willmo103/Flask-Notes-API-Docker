@@ -30,7 +30,7 @@ class File(db.Model):
         user_id: int = None,
         date_posted: datetime = datetime.utcnow(),
         private: bool = False,
-        details: str | None = None,
+        details = None,
     ) -> None:
         self.file_name = file_name
         self.user_id = user_id
@@ -65,9 +65,13 @@ class File(db.Model):
     def is_editable(self, user_id: int) -> bool:
 
         from app.models.user import User
-        return self.is_owned_by_user(user_id) or User.query.filter_by(id=user_id).first().is_admin()
 
-    def can_be_viewed(self, user_id: int | None) -> bool:
+        return (
+            self.is_owned_by_user(user_id)
+            or User.query.filter_by(id=user_id).first().is_admin()
+        )
+
+    def can_be_viewed(self, user_id) -> bool:
         if user_id is None:
             return not self.private or self.is_anonymous()
         return self.is_owned_by_user(user_id) or not self.private
@@ -79,7 +83,7 @@ class File(db.Model):
         return owner
 
     @staticmethod
-    def get_all_user_files(user_id) -> List | None:
+    def get_all_user_files(user_id):
         return [
             file
             for file in File.query.filter_by(user_id=user_id).all()
@@ -87,7 +91,7 @@ class File(db.Model):
         ]
 
     @staticmethod
-    def return_index_page_files(user_id: int | None) -> List | None:
+    def return_index_page_files(user_id):
         File.read_info_from_uploads_dir()
         return [
             file
@@ -128,7 +132,7 @@ class File(db.Model):
             yield file
 
     @staticmethod
-    def get_admin_files(current_user) -> List | None:
+    def get_admin_files(current_user):
         if current_user.is_admin():
             return File.query.all()
 

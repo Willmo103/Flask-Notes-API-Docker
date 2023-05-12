@@ -6,4 +6,4 @@ __pycache__
 *_uploads
 instance
 /uploads
-*dev2.yml
+*dev*

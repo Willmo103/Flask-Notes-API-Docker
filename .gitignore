@@ -7,3 +7,5 @@ __pycache__
 instance
 /uploads
 *dev*
+.dev.env
+.prod.env

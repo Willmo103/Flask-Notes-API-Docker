@@ -19,8 +19,6 @@ services:
        - UPLOAD_FOLDER=${UPLOAD_FOLDER}
     env_file:
       - .env
-    tty: true
-    restart: always
 
 volumes:
   uploads: {}

@@ -11,16 +11,17 @@ _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 @endpoint.route("/api/file/upload", methods=["POST"])
 def upload_file():
     uploaded_file = request.files.get("file")
-
     if uploaded_file:
         secure_filename = s_fn(uploaded_file.filename)
 
         if current_user.is_authenticated:
-            new_file: File = File.query.filter_by(file_name=secure_filename).first()
-            if new_file:
-                new_file.user_id = current_user.id
-                new_file.private = False  # request.json["private"]
-                new_file.details = "test"  # request.json["details"]
+            if not File.query.filter_by(file_name=secure_filename).first():
+                new_file: File = File(
+                    file_name=secure_filename,
+                    user_id=current_user.id,
+                    private=True,
+                    details="details",
+                )
                 new_file.save()
             else:
                 return jsonify(error="Failed to create new file"), 400
@@ -48,7 +49,7 @@ def get_user_files() -> Response:
     return jsonify(files=[file.serialize() for file in files])
 
 
-@endpoint.route("/api/file/<int:file_id>/edit", methods=["POST"])
+@endpoint.route("/api/file/<int:file_id>/edit", methods=["PUT"])
 @login_required
 def edit_file(file_id) -> Response:
     file = File.query.get_or_404(file_id)

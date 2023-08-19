@@ -29,7 +29,7 @@ def add_note():
     return jsonify(message="Your note has been saved.")
 
 
-@endpoint.route("/api/note/<int:note_id>/edit", methods=["POST"])
+@endpoint.route("/api/note/<int:note_id>/edit", methods=["PUT"])
 @login_required
 def edit_note(note_id):
     note = Note.query.get_or_404(note_id)
@@ -48,7 +48,7 @@ def edit_note(note_id):
         return jsonify(error="You do not have permission to edit this note."), 403
 
 
-@endpoint.route("/api/note/<int:note_id>/delete", methods=["POST"])
+@endpoint.route("/api/note/<int:note_id>/delete", methods=["DELETE"])
 @login_required
 def delete_note(note_id) -> Response:
     note = Note.query.get_or_404(note_id)

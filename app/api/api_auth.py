@@ -29,8 +29,11 @@ def login():
 
 @endpoint.route("/api/logout", methods=["GET"])
 def logout() -> Response:
-    logout_user()
-    return jsonify(message="Logged out successfully")
+    logged_out = logout_user()
+    if logged_out():
+        return jsonify(message="Logged out successfully"), 200
+    else:
+        return jsonify(error="Failed to log out"), 400
 
 
 @endpoint.route("/api/register", methods=["POST"])

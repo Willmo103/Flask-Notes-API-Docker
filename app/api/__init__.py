@@ -9,6 +9,12 @@ from .api_files import (
     download_file as download_file,
 )
 
+from .api_auth import (
+    login as login,
+    logout as logout,
+    register as register,
+)
+
 from .api_index import (
     get_notes as get_notes,
     get_files as get_files,

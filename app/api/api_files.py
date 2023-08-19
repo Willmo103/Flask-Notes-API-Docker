@@ -19,8 +19,8 @@ def upload_file():
             new_file: File = File.query.filter_by(file_name=secure_filename).first()
             if new_file:
                 new_file.user_id = current_user.id
-                new_file.private = request.json["private"]
-                new_file.details = request.json["details"]
+                new_file.private = False  # request.json["private"]
+                new_file.details = "test"  # request.json["details"]
                 new_file.save()
             else:
                 return jsonify(error="Failed to create new file"), 400

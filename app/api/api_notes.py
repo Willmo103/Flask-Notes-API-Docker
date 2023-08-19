@@ -15,9 +15,9 @@ __all__ = [
 
 @endpoint.route("/api/note/add", methods=["POST"])
 def add_note():
-    title = request.json['title']
-    content = request.json['content']
-    private = request.json['private']
+    title = request.json["title"]
+    content = request.json["content"]
+    private = request.json["private"]
 
     note = Note(
         title=title,
@@ -34,9 +34,9 @@ def add_note():
 def edit_note(note_id):
     note = Note.query.get_or_404(note_id)
     if current_user.is_admin() or note.user_id == current_user.id:
-        title = request.json['title']
-        content = request.json['content']
-        private = request.json['private']
+        title = request.json["title"]
+        content = request.json["content"]
+        private = request.json["private"]
 
         note.title = title
         note.content = content
@@ -63,7 +63,6 @@ def delete_note(note_id) -> Response:
 def get_user_notes() -> Response:
     notes = Note.get_user_notes(current_user.id)
     return jsonify(notes=[note.serialize() for note in notes])
-
 
 
 @endpoint.route("/api/note/search", methods=["POST"])

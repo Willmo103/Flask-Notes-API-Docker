@@ -30,7 +30,7 @@ class File(db.Model):
         user_id: int = None,
         date_posted: datetime = datetime.utcnow(),
         private: bool = False,
-        details = None,
+        details=None,
     ) -> None:
         self.file_name = file_name
         self.user_id = user_id
@@ -94,15 +94,13 @@ class File(db.Model):
     def return_index_page_files(user_id, limit: int = 10, offset: int = 0) -> List:
         File.read_info_from_uploads_dir()
         from app.models.user import User
+
         user = User.query.filter_by(id=user_id).first() if user_id is not None else None
         return [
             file
-            for file in File.query.order_by(
-                File.date_posted.desc()
-            ).all()
+            for file in File.query.order_by(File.date_posted.desc()).all()
             if file.can_be_viewed(user_id) and not file.deleted
         ][offset : offset + limit]
-
 
     @staticmethod
     def read_info_from_uploads_dir() -> None:
@@ -163,11 +161,14 @@ class File(db.Model):
 
     def serialize(self):
         from app.models.user import User
+
         return {
             "id": self.id,
             "date_posted": self.date_posted,
             "last_downloaded": self.last_downloaded,
-            "user": User.query.filter_by(id=self.user_id).first().serialize() if self.user_id is not None else "",
+            "user": User.query.filter_by(id=self.user_id).first().serialize()
+            if self.user_id is not None
+            else "",
             "file_name": self.file_name,
             "file_size": self.file_size,
             "file_type": self.file_type,

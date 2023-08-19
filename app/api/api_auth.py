@@ -15,9 +15,9 @@ def login():
     if current_user.is_authenticated:
         return jsonify(message="Already authenticated"), 400
 
-    username = request.json['username']
-    password = request.json['password']
-    remember_me = request.json['remember_me']
+    username = request.json["username"]
+    password = request.json["password"]
+    remember_me = request.json["remember_me"]
 
     user = User.query.filter_by(username=username).first()
     if user is None or not user.check_password(password):
@@ -38,9 +38,9 @@ def register():
     if current_user.is_authenticated:
         return jsonify(message="Already authenticated"), 400
 
-    username = request.json['username']
-    email = request.json['email']
-    password = request.json['password']
+    username = request.json["username"]
+    email = request.json["email"]
+    password = request.json["password"]
 
     user = User(username=username, email=email)
     user.set_password(password)

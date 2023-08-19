@@ -11,10 +11,11 @@ def get_notes() -> Response:
         user_id = current_user.id
     else:
         user_id = None
-    limit = request.args.get('limit', default=10, type=int)
-    skip = request.args.get('skip', default=0, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    skip = request.args.get("skip", default=0, type=int)
     notes = Note.index_page_notes(user_id, limit=limit, offset=skip)
     return jsonify(notes=[note.serialize() for note in notes])
+
 
 # Endpoint to get files
 @endpoint.route("/api/files", methods=["GET"])
@@ -23,7 +24,7 @@ def get_files() -> Response:
         user_id = current_user.id
     else:
         user_id = None
-    limit = request.args.get('limit', default=10, type=int)
-    skip = request.args.get('skip', default=0, type=int)
+    limit = request.args.get("limit", default=10, type=int)
+    skip = request.args.get("skip", default=0, type=int)
     files = File.return_index_page_files(user_id, limit=limit, offset=skip)
     return jsonify(files=[file.serialize() for file in files])

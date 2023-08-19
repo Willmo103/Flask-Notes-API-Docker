@@ -74,11 +74,14 @@ class Note(db.Model):
 
     @staticmethod
     def index_page_notes(user_id, limit: int = 10, offset: int = 0) -> List:
-        return [ note for note in Note.query.order_by(
-            Note.date_posted.desc()
-        ).limit(limit).offset(offset).all()
-                if note.is_viewable_by_user(user_id)
-                ]
+        return [
+            note
+            for note in Note.query.order_by(Note.date_posted.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+            if note.is_viewable_by_user(user_id)
+        ]
 
     @staticmethod
     def get_user_notes(user_id: int):
@@ -86,10 +89,13 @@ class Note(db.Model):
 
     def serialize(self):
         from app.models.user import User
+
         return {
             "id": self.id,
             "title": self.title,
             "content": self.content,
             "Posted": self.date_posted,
-            "User": User.query.filter_by(id=self.user_id).first().serialize() if self.user_id else "",
+            "User": User.query.filter_by(id=self.user_id).first().serialize()
+            if self.user_id
+            else "",
         }

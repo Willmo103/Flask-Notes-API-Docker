@@ -65,6 +65,7 @@ def get_user_notes() -> Response:
     return jsonify(notes=[note.serialize() for note in notes])
 
 
+
 @endpoint.route("/api/note/search", methods=["POST"])
 def search_notes() -> Response:
     search_term = request.json["search_term"]

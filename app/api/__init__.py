@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-api = Blueprint("api", __name__)
+endpoint = Blueprint("api", __name__)
 
 from .api_files import (
     upload_file as upload_file,

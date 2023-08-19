@@ -1,4 +1,4 @@
-from flask import Response, jsonify
+from flask import Response, jsonify, request
 from flask_login import current_user, login_required
 from app.models import Note, File
 from . import endpoint
@@ -6,7 +6,7 @@ from . import endpoint
 # Endpoint to get notes
 @endpoint.route("/api/notes", methods=["GET"])
 # def get_notes():
-def get_notes(request) -> Response:
+def get_notes() -> Response:
     if current_user.is_authenticated:
         user_id = current_user.id
     else:
@@ -18,7 +18,7 @@ def get_notes(request) -> Response:
 
 # Endpoint to get files
 @endpoint.route("/api/files", methods=["GET"])
-def get_files():
+def get_files() -> Response:
     if current_user.is_authenticated:
         user_id = current_user.id
     else:

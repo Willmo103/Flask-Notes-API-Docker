@@ -1,7 +1,6 @@
 from flask import request, jsonify, send_from_directory, Response
 from flask_login import current_user, login_required
 from app.models import File, Upload, Download, User, Deletion
-from app.forms import DeleteFileForm, FileUploadForm, EditFileForm
 from werkzeug.utils import secure_filename as s_fn
 import os
 from . import endpoint
@@ -11,7 +10,6 @@ _upload_folder: str = os.environ.get("UPLOAD_FOLDER")
 
 @endpoint.route("/api/file/upload", methods=["POST"])
 def upload_file():
-    form = FileUploadForm()
     uploaded_file = request.files.get('file')
 
     if uploaded_file:

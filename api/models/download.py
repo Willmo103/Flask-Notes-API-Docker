@@ -1,5 +1,5 @@
 from datetime import datetime
-from app import db
+from api import db
 
 
 class Download(db.Model):

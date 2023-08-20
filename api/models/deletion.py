@@ -1,6 +1,6 @@
-from app import db
+from api import db
 from datetime import datetime
-from app.models.user import User
+from api.models.user import User
 
 
 class Deletion(db.Model):

@@ -1,6 +1,6 @@
 from typing import List
 from sqlalchemy import or_
-from app import db
+from api import db
 
 
 class Group(db.Model):
@@ -39,7 +39,7 @@ class Group(db.Model):
         return self.private
 
     def add_bookmark(self, bookmark) -> None:
-        self.bookmarks.append(bookmark)
+        self.bookmarks.apiend(bookmark)
         db.session.commit()
 
     @staticmethod

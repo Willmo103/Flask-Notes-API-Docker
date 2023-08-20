@@ -1,8 +1,8 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from app import db, login_manager
-from app.models.note import Note
-from app.models.file import File
+from api import db, login_manager
+from api.models.note import Note
+from api.models.file import File
 
 
 @login_manager.user_loader

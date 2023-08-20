@@ -1,7 +1,7 @@
 from flask import jsonify, request, Response
 from flask_login import current_user, login_required
-from app import db
-from app.models import Note
+from api import db
+from api.models import Note
 from . import endpoint
 
 __all__ = [

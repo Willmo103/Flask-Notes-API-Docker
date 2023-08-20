@@ -1,6 +1,6 @@
 from flask import Response, jsonify, request
-from flask_login import current_user, login_required
-from app.models import Note, File
+from flask_login import current_user
+from api.models import Note, File
 from . import endpoint
 
 # Endpoint to get notes

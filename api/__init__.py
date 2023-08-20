@@ -27,7 +27,7 @@ init_uploads_folder()
 init_secret_key()
 
 
-# initialize the app configuration with the utils module and Config class
+# initialize the api configuration with the utils module and Config class
 class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI")
     UPLOADS_FOLDER = os.environ.get("UPLOADS_FOLDER")
@@ -50,36 +50,36 @@ login_manager = LoginManager()
 # set the login view for the login manager
 login_manager.login_view = "api.login"
 
-# create the app factory function and register the blueprints and database
-def create_app():
-    # create the flask app instance
-    app = Flask(__name__)
+# create the api factory function and register the blueprints and database
+def create_api():
+    # create the flask api instance
+    api = Flask(__name__)
 
-    # load the app configuration
-    app.config.from_object(Config)
+    # load the api configuration
+    api.config.from_object(Config)
 
     # initialize the database
-    db.init_app(app)
+    db.init_api(api)
 
     # initialize the login manager
-    login_manager.init_app(app)
+    login_manager.init_api(api)
 
-    # using the app context, register the blueprints and models
-    with app.app_context():
+    # using the api context, register the blueprints and models
+    with api.api_context():
 
         # import the routes and models modules
         from . import models
         from . import routes
 
         # register the blueprints
-        app.register_blueprint(routes.endpoint)
+        api.register_blueprint(routes.endpoint)
 
         # create the database tables if they do not exist
         db.create_all()
 
-        # return the app instance
-        return app
+        # return the api instance
+        return api
 
 
-# create the app instance
-app = create_app()
+# create the api instance
+api = create_api()

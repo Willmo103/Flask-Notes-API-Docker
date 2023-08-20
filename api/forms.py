@@ -1,4 +1,4 @@
-from app.models import User
+from api.models import User
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,

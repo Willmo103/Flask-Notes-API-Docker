@@ -1,4 +1,4 @@
-from app import db
+from api import db
 from typing import List, Generator
 from datetime import datetime
 from sqlalchemy import or_
@@ -65,7 +65,7 @@ class File(db.Model):
     def is_editable(self, user_id: int = None) -> bool:
         if user_id is None:
             return False
-        from app.models.user import User
+        from api.models.user import User
 
         return (
             self.is_owned_by_user(user_id)
@@ -78,7 +78,7 @@ class File(db.Model):
         return self.is_owned_by_user(user_id) or not self.private
 
     def get_owner(self):
-        from app.models.user import User
+        from api.models.user import User
 
         owner = User.query.filter_by(id=self.user_id).first()
         return owner
@@ -94,7 +94,7 @@ class File(db.Model):
     @staticmethod
     def return_index_page_files(user_id, limit: int = 10, offset: int = 0) -> List:
         File.read_info_from_uploads_dir()
-        from app.models.user import User
+        from api.models.user import User
 
         user = User.query.filter_by(id=user_id).first() if user_id is not None else None
         return [
@@ -161,7 +161,7 @@ class File(db.Model):
         return []
 
     def serialize(self):
-        from app.models.user import User
+        from api.models.user import User
 
         return {
             "id": self.id,

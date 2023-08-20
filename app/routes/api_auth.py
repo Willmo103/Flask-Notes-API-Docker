@@ -1,6 +1,6 @@
 from flask import jsonify, request, Response
 from flask_login import current_user, login_user, logout_user
-from app.models import User
+from api.models import User
 from . import endpoint
 
 __all__ = [

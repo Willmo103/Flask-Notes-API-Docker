@@ -48,12 +48,7 @@ db: SQLAlchemy = SQLAlchemy()
 login_manager = LoginManager()
 
 # set the login view for the login manager
-login_manager.login_view = "routes.login"
-
-# Add Jinja2 filter for Markdown conversion
-def markdown_filter(content):
-    return markdown.markdown(content)
-
+login_manager.login_view = "api.login"
 
 # create the app factory function and register the blueprints and database
 def create_app():
@@ -73,16 +68,11 @@ def create_app():
     with app.app_context():
 
         # import the routes and models modules
-        from . import routes
         from . import models
-        from . import api
+        from . import routes
 
         # register the blueprints
         app.register_blueprint(routes.endpoint)
-        app.register_blueprint(api.endpoint)
-
-        # Register the markdown filter with the app
-        app.jinja_env.filters["markdown"] = markdown_filter
 
         # create the database tables if they do not exist
         db.create_all()

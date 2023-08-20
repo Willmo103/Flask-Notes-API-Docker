@@ -1,7 +1,7 @@
 from typing import List
 from datetime import datetime
 from sqlalchemy import or_
-from app import db
+from api import db
 
 
 class Note(db.Model):
@@ -48,7 +48,7 @@ class Note(db.Model):
         return self.is_owned_by_user(user_id) or not self.private
 
     def get_owner(self) -> str:
-        from app.models.user import User
+        from api.models.user import User
 
         owner = User.query.filter_by(id=self.user_id).first()
         return owner
@@ -88,7 +88,7 @@ class Note(db.Model):
         return Note.query.filter_by(user_id=user_id).all()
 
     def serialize(self):
-        from app.models.user import User
+        from api.models.user import User
 
         return {
             "id": self.id,

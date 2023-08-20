@@ -1,6 +1,6 @@
 from flask import request, jsonify, send_from_directory, Response
 from flask_login import current_user, login_required
-from app.models import File, Upload, Download, User, Deletion
+from api.models import File, Upload, Download, User, Deletion
 from werkzeug.utils import secure_filename as s_fn
 import os
 from . import endpoint

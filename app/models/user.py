@@ -51,3 +51,9 @@ class User(UserMixin, db.Model):
         if user is None:
             raise Exception("User not found")
         return user
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "username": self.username,
+        }

@@ -1,0 +1,10 @@
+.env
+.vscode
+.venv
+__pycache__
+*.db
+*_uploads
+instance
+/uploads
+*dev*
+*prod*

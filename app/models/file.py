@@ -92,11 +92,15 @@ class File(db.Model):
         ]
 
     @staticmethod
-    def return_index_page_files(user_id, limit: int = 10, offset: int = 0) -> List:
+    def return_index_page_files(user_id, limit: int = 0, offset: int = 0) -> List:
         File.read_info_from_uploads_dir()
         from app.models.user import User
-
-        user = User.query.filter_by(id=user_id).first() if user_id is not None else None
+        if limit == 0:
+            return [
+                file
+                for file in File.query.order_by(File.date_posted.desc()).all()
+                if file.can_be_viewed(user_id) and not file.deleted
+            ]
         return [
             file
             for file in File.query.order_by(File.date_posted.desc()).all()

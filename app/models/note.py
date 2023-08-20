@@ -73,7 +73,15 @@ class Note(db.Model):
         return []
 
     @staticmethod
-    def index_page_notes(user_id, limit: int = 10, offset: int = 0) -> List:
+    def index_page_notes(user_id, limit: int = 0, offset: int = 0) -> List:
+        if limit == 0:
+            return [
+                note
+                for note in Note.query.order_by(Note.date_posted.desc())
+                .offset(offset)
+                .all()
+                if note.is_viewable_by_user(user_id)
+            ]
         return [
             note
             for note in Note.query.order_by(Note.date_posted.desc())

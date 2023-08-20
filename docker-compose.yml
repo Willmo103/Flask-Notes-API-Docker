@@ -1,27 +1,24 @@
-version: '3.8'
+version: "3.8"
 
 services:
   web:
-    container_name: infoDock-v2.0
-    image: willmo103/note-server:latest
+    container_name: info-hub-v2.0
+    build: .
     working_dir: /src
     volumes:
       - ./uploads:/src/uploads
     ports:
-     - "4202:4202"
+      - "4202:4202"
     environment:
-       - SECRET_KEY=${SECRET_KEY}
-       - DATABASE_URL_POSTGRES=${DATABASE_URL_POSTGRES}
-       - DATABASE_URL_SQLITE=${DATABASE_URL_SQLITE}
-       - SQLALCHEMY_TRACK_MODIFICATIONS=${SQLALCHEMY_TRACK_MODIFICATIONS}
-       - SQLALCHEMY_ECHO=${SQLALCHEMY_ECHO}
-       - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
-       - UPLOAD_FOLDER=${UPLOAD_FOLDER}
+      - SECRET_KEY=${SECRET_KEY}
+      - DATABASE_URL_POSTGRES=${DATABASE_URL_POSTGRES}
+      - DATABASE_URL_SQLITE=${DATABASE_URL_SQLITE}
+      - SQLALCHEMY_TRACK_MODIFICATIONS=${SQLALCHEMY_TRACK_MODIFICATIONS}
+      - SQLALCHEMY_ECHO=${SQLALCHEMY_ECHO}
+      - SQLALCHEMY_DATABASE_URI=${SQLALCHEMY_DATABASE_URI}
+      - UPLOAD_FOLDER=${UPLOAD_FOLDER}
     env_file:
       - .env
-    tty: true
-    restart: always
 
 volumes:
-  uploads: {}
-
+  uploaded-files: {}

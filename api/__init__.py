@@ -2,7 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
 from .utils import init_db_config, init_uploads_folder, init_secret_key
-import dotenv, markdown, os
+import dotenv, os
 
 # set the project root directory as an environment variable to be used in other modules
 os.environ["PROJECT_ROOT"] = os.path.abspath(
@@ -48,7 +48,7 @@ db: SQLAlchemy = SQLAlchemy()
 login_manager = LoginManager()
 
 # set the login view for the login manager
-login_manager.login_view = "api.login"
+login_manager.login_view = "routes.login"
 
 # create the api factory function and register the blueprints and database
 def create_api():
@@ -59,13 +59,13 @@ def create_api():
     api.config.from_object(Config)
 
     # initialize the database
-    db.init_api(api)
+    db.init_app(api)
 
     # initialize the login manager
-    login_manager.init_api(api)
+    login_manager.init_app(api)
 
     # using the api context, register the blueprints and models
-    with api.api_context():
+    with api.app_context():
 
         # import the routes and models modules
         from . import models

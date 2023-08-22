@@ -32,7 +32,8 @@ def upload_file():
 
     if current_user.is_authenticated:
         new_file: File = File.query.filter_by(file_name=secure_filename).first()
-        if new_file:
+        if not new_file:
+            new_file = File(file_name=secure_filename)
             new_file.user_id = current_user.id
             new_file.private = form.private.data
             new_file.details = form.details.data

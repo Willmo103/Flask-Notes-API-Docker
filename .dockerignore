@@ -3,3 +3,10 @@
 /uploads
 /instance
 *.db
+/dev
+/prod
+Dockerfile
+docker-compose.yml
+/docker
+/Notes-API
+/notes-site

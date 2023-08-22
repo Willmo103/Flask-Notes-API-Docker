@@ -8,3 +8,5 @@ instance
 /uploads
 *dev*
 *prod*
+/Notes-API
+/notes-site
